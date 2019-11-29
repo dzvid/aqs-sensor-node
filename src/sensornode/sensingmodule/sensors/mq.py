@@ -59,6 +59,9 @@ class MQSensor(Sensor):
     # m - expoente
     self.M_EXPO = M_EXPO
 
+    #### ADC ####
+    self._adc = ADC(pin_adc=MQ_ADC_PIN)  # ADC channel (MCP3008)
+
     #### RASPBERRY VOLTAGE DIVIDER (from circuit values) ####
     self.R1 = R1                       # 10kOhms
     self.R2 = R2                       # 20kOhms
@@ -87,9 +90,7 @@ class MQSensor(Sensor):
                                        # min[Rs/Ro]=(min[ppm]/a)^(1/m)
                                        # max[Rs/Ro]=(max[ppm]/a)^(1/m)
 
-    #### ADC ####
-    self.adc = ADC(pin_adc=MQ_ADC_PIN)  # ADC channel (MCP3008)
-
+  
   def _read_RS(self):
     """Calculates the MQ sensor resistance (RS).
 
@@ -136,7 +137,7 @@ class MQSensor(Sensor):
     # VPIN = (self._adc.read_raw_value() * self.VCC_PI_INPUT_MAX) / self._adc.read_adc_max_resolution()  # Convert the adc discrete value
     #                                                                                                    # to a voltage equivalent value
     
-    VPIN = self.adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
+    VPIN = self._adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
     VOUT = ((self.R1 + self.R2) / self.R2) * VPIN
     RS = (self.VCC / VOUT - 1.0) * self.RL_VALUE
 
