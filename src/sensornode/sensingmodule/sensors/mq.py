@@ -132,9 +132,11 @@ class MQSensor(Sensor):
       The calculated sensor resistance
     """
 
-    VPIN = (self._adc.read_adc() * self.VCC_PI_INPUT_MAX) / \
-            self._adc.read_adc_max_resolution()  # Convert the adc discrete value
-                                                                          # to a voltage equivalent value
+    # Using the VPIN voltage value instead of the raw value from adc.
+    # VPIN = (self._adc.read_raw_value() * self.VCC_PI_INPUT_MAX) / self._adc.read_adc_max_resolution()  # Convert the adc discrete value
+    #                                                                                                    # to a voltage equivalent value
+    
+    VPIN = self._adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
     VOUT = ((self.R1 + self.R2) / self.R2) * VPIN
     RS = (self.VCC / VOUT - 1.0) * self.RL_VALUE
 
