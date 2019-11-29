@@ -22,11 +22,11 @@ class MQ131(MQSensor):
         self._A_EXPO = env.float('MQ131_A_EXPO')
         self._M_EXPO = env.float('MQ131_M_EXPO')
         self._RSRO_CLEAN_AIR = env.float('MQ131_RSRO_CLEAN_AIR')
-        self._MIN_RSRO = env.float('MQ131_MIN_RSRO')
-        self._MAX_RSRO = env.float('MQ131_MAX_RSRO')
+        self._MIN_CONCENTRATION = env.float('MQ131_MIN_CONCENTRATION')
+        self._MAX_CONCENTRATION = env.float('MQ131_MAX_CONCENTRATION')
 
         super().__init__(R1=self._R1, R2=self._R2, MQ_ADC_PIN=self._MQ_ADC_PIN, RL_VALUE=self._RL_VALUE, RO_CLEAN_AIR=self._RO_CLEAN_AIR, A_EXPO=self._A_EXPO,
-                         M_EXPO=self._M_EXPO, RSRO_CLEAN_AIR=self._RSRO_CLEAN_AIR, MIN_RSRO=self._MIN_RSRO, MAX_RSRO=self._MAX_RSRO)
+                         M_EXPO=self._M_EXPO, RSRO_CLEAN_AIR=self._RSRO_CLEAN_AIR, MIN_CONCENTRATION=self._MIN_CONCENTRATION, MAX_CONCENTRATION=self._MAX_CONCENTRATION)
 
     def get_reading(self):
         """

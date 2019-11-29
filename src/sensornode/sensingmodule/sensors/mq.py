@@ -25,7 +25,7 @@ class MQSensor(Sensor):
   READING_MODE_SAMPLES_INTERVAL = 0.5
 
   def __init__(self, R1=None, R2=None, MQ_ADC_PIN=None, RL_VALUE=None, RO_CLEAN_AIR=None,
-  A_EXPO=None,  M_EXPO=None, RSRO_CLEAN_AIR=None, MIN_RSRO=None, MAX_RSRO=None):
+  A_EXPO=None,  M_EXPO=None, RSRO_CLEAN_AIR=None, MIN_CONCENTRATION=None, MAX_CONCENTRATION=None):
     """
     Creates a MQ sensor instance.
     """
@@ -44,10 +44,10 @@ class MQSensor(Sensor):
       raise ValueError("M_EXPO value must be declared")
     if(RSRO_CLEAN_AIR is None):
       raise ValueError("RSRO_CLEAN_AIR value must be declared")
-    if(MIN_RSRO is None):
-      raise ValueError("MIN_RSRO value must be declared")
-    if(MAX_RSRO is None):
-      raise ValueError("MAX_RSRO value must be declared")
+    if(MIN_CONCENTRATION is None):
+      raise ValueError("MIN_CONCENTRATION value must be declared")
+    if(MAX_CONCENTRATION is None):
+      raise ValueError("MAX_CONCENTRATION value must be declared")
 
     #### CONCENTRATION CALCULATION ####
     # MQ gas sensor correlation function estimated from datasheet
@@ -78,17 +78,10 @@ class MQSensor(Sensor):
     else:
       self.RO_CLEAN_AIR = RO_CLEAN_AIR
 
-                                       # By the datasheet figure we have to select 
-                                       # the max and min Rs/Ro and ppm points.
-                                       # The min and max value depends on the datasheet curve
-                                       # to be determined, for example:
-                                       # for MQ135:
-    self.MIN_RSRO = MIN_RSRO           # min[Rs/Ro]=(max[ppm]/a)^(1/m)
-    self.MAX_RSRO = MAX_RSRO           # max[Rs/Ro]=(min[ppm]/a)^(1/m)
-                                       #
-                                       # But for MQ-131:
-                                       # min[Rs/Ro]=(min[ppm]/a)^(1/m)
-                                       # max[Rs/Ro]=(max[ppm]/a)^(1/m)
+                                                         # By the datasheet figure we have to select 
+                                                         # the max and min gas concentration sensibility points.
+    self.MIN_CONCENTRATION = MIN_CONCENTRATION           # minimum concentration sensibility of gas sensor
+    self.MAX_CONCENTRATION = MAX_CONCENTRATION           # maximum concentration sensibility of gas sensor
 
   
   def _read_RS(self):
@@ -136,7 +129,7 @@ class MQSensor(Sensor):
     # Using the VPIN voltage value instead of the raw value from adc.
     # VPIN = (self._adc.read_raw_value() * self.VCC_PI_INPUT_MAX) / self._adc.read_adc_max_resolution()  # Convert the adc discrete value
     #                                                                                                    # to a voltage equivalent value
-    
+    # TODO: Check requirements for when VOUT is 0V
     VPIN = self._adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
     VOUT = ((self.R1 + self.R2) / self.R2) * VPIN
     RS = (self.VCC / VOUT - 1.0) * self.RL_VALUE
@@ -190,12 +183,12 @@ class MQSensor(Sensor):
     """
     # Get actual rs and rsro ratio
     rs = self._get_average_rs()
-    ratio_rsro = rs/self.RO_CLEAN_AIR
+    ratio_rsro = rs / self.RO_CLEAN_AIR
 
-    if(ratio_rsro >= self.MIN_RSRO and ratio_rsro <= self.MAX_RSRO ):        
-      # Equation to obtain gas concentration => gas_concentration = a*x^m, x = Rs/Ro
-      concentration = (self.A * pow(ratio_rsro, self.M))
+    # Equation to obtain gas concentration => gas_concentration = a*x^m, x = Rs/Ro
+    gas_concentration = (self.A_EXPO * pow(ratio_rsro, self.M_EXPO))
 
-      return round(concentration, 3)
+    if(gas_concentration >= self.MIN_CONCENTRATION and gas_concentration <= self.MAX_CONCENTRATION ):       
+      return round(gas_concentration, 3)
     else:
       return None
