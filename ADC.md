@@ -115,9 +115,8 @@ Connection using a standard SPI connection to the Raspberry Pi:
 - MCP3008 VREF to Pi 3.3V
 - MCP3008 AGND to Pi GND
 - MCP3008 DGND to Pi GND
-- MCP3008 CH0 to Potentiometer middle pin
 
-Check the image extracted from Adafruit:
+Check the image extracted from Adafruit (ignore the potentiometer wiring):
 
 <img src="./assets/adafruit_products_raspi_MCP3008_spi_bb.png" width="80%">
 
