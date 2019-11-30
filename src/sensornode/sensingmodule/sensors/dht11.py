@@ -18,6 +18,9 @@ class DHT11Sensor(Sensor):
         if (self._pin is None):
             raise ValueError('DHT pin value must be informed.')
 
+    def calibrate(self):
+        pass
+
     def get_reading(self):
         """
         Returns the humidity value measured by the DHT11 sensor.
