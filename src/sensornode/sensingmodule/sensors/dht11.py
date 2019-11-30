@@ -1,6 +1,8 @@
-from environs import Env
+import time
 
 import Adafruit_DHT
+
+from environs import Env
 
 from .sensor import Sensor
 
@@ -19,11 +21,20 @@ class DHT11Sensor(Sensor):
             raise ValueError('DHT pin value must be informed.')
 
     def calibrate(self):
-        pass
+        """
+        During the DHT11 booting time (when the circuit turns on), the datasheet 
+        informs to wait 1 second before the sensor is able to respond to any commands.
+        """
+        print('Calibrating DHT11 sensor...')
+
+        time.sleep(1)
+
+        print('Calibrating DHT11 sensor...done!')
 
     def get_reading(self):
         """
-        Returns the humidity value measured by the DHT11 sensor.
+        Returns the humidity value measured by the DHT11 sensor. According to the datasheet
+        the time interval between taking consecutive readings must be at least of 2 seconds.
 
         In most cases you'll always get back a temperature or humidity value when requested,
         but sometimes if there's electrical noise or the signal was interrupted in some way.  
