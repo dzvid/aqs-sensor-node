@@ -1,29 +1,42 @@
-import board
-import adafruit_dht
+from environs import Env
+
+import Adafruit_DHT
+
+from .sensor import Sensor
+
+# Load enviroment variables
+env = Env()
 
 
-class DHT11Sensor:
+class DHT11Sensor(Sensor):
 
-    def __init__(self):
-        self._dht = adafruit_dht.DHT11(board.D4)
+    def __init__(self, pin=None):
+        self._sensor = Adafruit_DHT.DHT11
 
-    def get_humidity(self):
+        self._pin = env.int('DHT11_PIN', default=None)
+
+        if (self._pin is None):
+            raise ValueError('DHT pin value must be informed.')
+
+    def get_reading(self):
         """
         Returns the humidity value measured by the DHT11 sensor.
 
-        In most cases you'll always get back a temperature or humidity value when requested, 
-        but sometimes if there's electrical noise or the signal was interrupted in some way 
-        you might see an exception thrown to try again.  It's normal for these sensors to 
-        sometimes be hard to read and you might need to make your code retry a few times if 
-        it fails to read (recommended to retry after 1/2 seconds). 
-        Reading the sensor may rise an exception if a problem occurs, it catchs a
-        RuntimeError. When the sensor trhws the exception, the method returns None. 
+        In most cases you'll always get back a temperature or humidity value when requested,
+        but sometimes if there's electrical noise or the signal was interrupted in some way.  
+        Use the read_retry method which will retry up to 15 times to get a sensor reading 
+        (waiting 2 seconds between each retry).
+        Note that sometimes you won't get a reading and
+        the results will be null (because Linux can't
+        guarantee the timing of calls to read the sensor).
+        If this happens, the method returns None (and it is necessary to try again!).
         """
-        try:
-            humidity = self._dht.humidity
 
+        humidity, _temperature = Adafruit_DHT.read_retry(
+            self._sensor, self._pin)
+
+        if humidity is not None:
             return humidity
-        except RuntimeError as error:
-            print(
-                "Reading from DHT failure: {0}. Trying again!".format(error.args))
+        else:
+            print("Reading from DHT failed. Try again!")
             return None
