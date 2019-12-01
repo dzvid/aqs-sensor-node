@@ -20,6 +20,15 @@ After finish the operation, reboot the pi.
   ls /sys/bus/w1/devices/
 ```
 
+## Wiring
+
+The DHT 11 Wiring to the Raspberry Pi board:
+
+- DHT VCC (pin 1) to Pi 3V3
+- DHT Data signal (pin 2) to Pi GPIO4
+- DHT pin 3 not used.
+- DHT GND (pin 4) to Pi GND
+
 ## Install Adafruit DHT Python library
 
 Now it is time to install the python library made by Adafruit to read the DHT series of humidity and temperature sensors on a Raspberry Pi or Beaglebone Black. Check this [link](https://github.com/adafruit/Adafruit_Python_DHT) for the Adafruit library repository in Github.  
@@ -47,7 +56,7 @@ pip3 install Adafruit_DHT
 
 ### Compiling from source
 
-If necessary to compile and install the library from the repository. First download the library source code from the [GitHub releases page](https://github.com/adafruit/Adafruit_Python_DHT/releases), unzipping the archive, and execute: 
+If necessary to compile and install the library from the repository. First download the library source code from the [GitHub releases page](https://github.com/adafruit/Adafruit_Python_DHT/releases), unzipping the archive, and execute:
 
 Python 3:
 
@@ -61,4 +70,3 @@ You may also git clone the repository if you want to test an unreleased version:
 ```bash
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 ```
-
