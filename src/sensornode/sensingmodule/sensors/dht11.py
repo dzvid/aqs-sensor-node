@@ -37,8 +37,9 @@ class DHT11(Sensor):
     @property
     def humidity(self):
         """
-        Returns the humidity value measured by the DHT11 sensor. According to the datasheet
-        the time interval between taking consecutive readings must be at least of 2 seconds.
+        Returns a float percentage value representing the the humidity measured by the DHT11 sensor. 
+        According to the datasheet the time interval between taking consecutive readings 
+        must be of at least of 2 seconds.
 
         In most cases you'll always get back a temperature or humidity value when requested,
         but sometimes if there's electrical noise or the signal was interrupted in some way.  
