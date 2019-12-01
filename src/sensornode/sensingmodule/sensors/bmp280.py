@@ -11,7 +11,7 @@ from .sensor import Sensor
 env = Env()
 
 
-class BMP280:
+class BMP280(Sensor):
     """
     Class that represents the BMP280 Sensor.
     """
@@ -31,6 +31,12 @@ class BMP280:
         else:
             raise ValueError(
                 'Necessary to inform location\'s pressure (in hPa) at sea level')
+
+    def calibrate(self):
+        """
+        Not necessary to calibrate the BMP280.
+        """
+        pass
 
     @property
     def pressure(self):
