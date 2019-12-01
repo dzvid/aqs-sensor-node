@@ -12,12 +12,16 @@ env = Env()
 
 
 class BMP280:
+    """
+    Class that represents the BMP280 Sensor.
+    """
 
     def __init__(self):
 
         self._i2c = busio.I2C(board.SCL, board.SDA)
         self._bmp_sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c=self._i2c)
 
+        # change BMP280_LOCAL_SEA_LEVEL in .env to match the location's pressure (hPa) at sea level
         self._local_sea_level = env.float(
             'BMP280_LOCAL_SEA_LEVEL', default=None)
 
@@ -31,12 +35,12 @@ class BMP280:
     @property
     def pressure(self):
         """
-        The compensated pressure in hectoPascals.
-        returns None if pressure measurement is disabled
+        The compensated pressure (current air pressure at your altitude)
+        in hectoPascals (hPa). Returns None if pressure measurement is disabled.
         """
         return self._bmp_sensor.pressure
 
     @property
     def temperature(self):
-        """The compensated temperature in degrees celsius."""
+        """The compensated temperature in degrees Celsius."""
         return self._bmp_sensor.temperature
