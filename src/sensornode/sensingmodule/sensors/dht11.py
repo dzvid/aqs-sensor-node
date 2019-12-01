@@ -10,9 +10,12 @@ from .sensor import Sensor
 env = Env()
 
 
-class DHT11Sensor(Sensor):
+class DHT11(Sensor):
+    """
+    Class to connect to the DHT11 sensor.
+    """
 
-    def __init__(self, pin=None):
+    def __init__(self):
         self._sensor = Adafruit_DHT.DHT11
 
         self._pin = env.int('DHT11_PIN', default=None)
@@ -31,7 +34,8 @@ class DHT11Sensor(Sensor):
 
         print('Calibrating DHT11 sensor...done!')
 
-    def get_reading(self):
+    @property
+    def humidity(self):
         """
         Returns the humidity value measured by the DHT11 sensor. According to the datasheet
         the time interval between taking consecutive readings must be at least of 2 seconds.
