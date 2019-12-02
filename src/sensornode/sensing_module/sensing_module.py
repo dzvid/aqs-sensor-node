@@ -77,7 +77,7 @@ class SensingModule:
                 current_humidity=humidity, current_temperature=temperature)
 
             # Reads MQ131
-            ozone = self._mq131.get_carbon_monoxide(
+            ozone = self._mq131.get_ozone(
                 current_humidity=humidity, current_temperature=temperature, current_pressure=pressure)
 
             # Boilerplate
