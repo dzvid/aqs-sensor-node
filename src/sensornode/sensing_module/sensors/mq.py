@@ -282,8 +282,8 @@ class MQSensor(Sensor):
       - The gas concentration is out of range of the sensor sensibility.
     """
     if(self.RO_CLEAN_AIR is None):
-      raise ValueError("RO_CLEAN_AIR value must be declared. Use calibrate_ro \
-        to calculate Ro value in clean air.")
+      raise ValueError("Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+        to calculate Ro value in clean air.".format(self.NAME))
 
     # Check if MQ sensor is not in valid environment working conditions
     if not self._check_working_conditions(current_humidity=current_humidity, current_temperature=current_temperature):
