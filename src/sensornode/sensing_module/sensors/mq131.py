@@ -96,11 +96,11 @@ class MQ131(MQSensor):
 
         # The equation to convert ppm to µg/m³ for a Z ppm concentration of a given element/compost is:
 
-        # C = 12.195 * Z * (X/Y) * molecular_weight (µg/m³)
+        # C = 12195 * Z * (X/Y) * molecular_weight (µg/m³)
 
         # for a M ppb concentration (ppm value = ppb value / 1000):
         # (USED IN THIS CODE)
-        # C = 0.012195 * M * (X/Y) * molecular_weight (µg/m³)
+        # C = 12.195 * M * (X/Y) * molecular_weight (µg/m³)
 
         # where:
         # C: is the equivalent ppm value in µg/m³.
@@ -131,7 +131,7 @@ class MQ131(MQSensor):
         kelvin = current_temperature + 273.15
 
         if ozone_ppb is not None:
-            ozone_ug_m3 = 0.012195 * ozone_ppb * \
+            ozone_ug_m3 = 12.195 * ozone_ppb * \
                 (atm / kelvin) * self._molecular_weight
 
             return round(ozone_ug_m3, 3)
