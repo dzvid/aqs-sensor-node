@@ -10,7 +10,7 @@ class MQ135(MQSensor):
 
     def __init__(self):
         # Sensor parameters
-        self._NAME = env.float('MQ135_NAME', default=None)
+        self._NAME = env.str('MQ135_NAME', default=None)
         self._R1 = env.float('MQ135_R1', default=None)
         self._R2 = env.float('MQ135_R2', default=None)
         self._MQ_ADC_PIN = env.int('MQ135_MQ_ADC_PIN', default=None)

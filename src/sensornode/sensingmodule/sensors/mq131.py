@@ -15,7 +15,7 @@ class MQ131(MQSensor):
         self._molecular_weight = 48.0  # Ozone molecular weight 48 g/mol
 
         # Sensor parameters
-        self._NAME = env.float('MQ131_NAME', default=None)
+        self._NAME = env.str('MQ131_NAME', default=None)
         self._R1 = env.float('MQ131_R1', default=None)
         self._R2 = env.float('MQ131_R2', default=None)
         self._MQ_ADC_PIN = env.int('MQ131_MQ_ADC_PIN', default=None)
