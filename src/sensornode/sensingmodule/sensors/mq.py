@@ -188,7 +188,7 @@ class MQSensor(Sensor):
 
     print('Calibrating  Sensor {0} Ro value in clean air...'.format(self.NAME))
     # Check if MQ sensor is in valid environment working conditions
-    if self._check_working_conditions(current_temperature, current_humidity):  
+    if self._check_working_conditions(current_humidity=current_humidity ,current_temperature=current_temperature):  
 
       rs = 0.0
 
@@ -201,6 +201,7 @@ class MQSensor(Sensor):
       ro = rs / self.RSRO_CLEAN_AIR         # Calculate RO value in clean air
                                             # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
                                             # RSRO_CLEAN_AIR is obtained from the datasheet
+
       print("Calibrating Ro in clean air...done!")
       print("{0} RO_CLEAN_AIR = {1}".format(self.NAME, ro))
     else:
@@ -282,7 +283,7 @@ class MQSensor(Sensor):
         to calculate Ro value in clean air.")
 
     # Check if MQ sensor is not in valid environment working conditions
-    if not self._check_working_conditions(current_humidity, current_temperature):
+    if not self._check_working_conditions(current_humidity=current_humidity, current_temperature=current_temperature):
       return None
     
     # Get actual rs and rsro ratio

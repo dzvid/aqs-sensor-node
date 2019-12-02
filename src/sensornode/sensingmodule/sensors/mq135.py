@@ -44,7 +44,7 @@ class MQ135(MQSensor):
         """
         super().calibrate()
 
-    def calibrate_ro(self):
+    def calibrate_ro(self, current_humidity=None, current_temperature=None):
         """
         Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
         Otherwise, returns None
@@ -52,10 +52,19 @@ class MQ135(MQSensor):
         Assuming that the sensor is in clean air, the method gets the gas
         sensor resistance (RS) in clean air, then it divides by RSRO_CLEAN_AIR 
         factor to obtain the Ro resistance value in clean air.
-        """
-        return super().calibrate_ro()
 
-    def get_carbon_monoxide(self,  current_humidity=None, current_temperature=None):
+
+        Parameters
+        ----------
+        current_humidity: float
+          Humidity in percentage.
+
+        current_temperature: float
+          Temperature in degrees Celsius.
+        """
+        return super().calibrate_ro(current_humidity=current_humidity, current_temperature=current_temperature)
+
+    def get_carbon_monoxide(self, current_humidity=None, current_temperature=None):
         """
         Returns the carbon monoxide value in ppm units. 
 
@@ -81,4 +90,5 @@ class MQ135(MQSensor):
         if(current_temperature is None):
             raise ValueError('Temperature value must be informed')
 
-        return super().get_reading(current_humidity, current_temperature)
+        return super().get_reading(current_humidity=current_humidity,
+                                   current_temperature=current_temperature)
