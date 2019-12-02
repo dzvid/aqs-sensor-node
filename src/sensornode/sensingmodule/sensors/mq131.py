@@ -1,3 +1,4 @@
+import time
 
 from environs import Env
 
@@ -13,54 +14,114 @@ class MQ131(MQSensor):
         # Ozone properties
         self._molecular_weight = 48.0  # Ozone molecular weight 48 g/mol
 
-        # Circuit parameters
-        self._R1 = env.float('MQ131_R1')
-        self._R2 = env.float('MQ131_R2')
-        self._MQ_ADC_PIN = env.int('MQ131_MQ_ADC_PIN')
-        self._RL_VALUE = env.float('MQ131_RL_VALUE')
+        # Sensor parameters
+        self._NAME = env.float('MQ131_NAME', default=None)
+        self._R1 = env.float('MQ131_R1', default=None)
+        self._R2 = env.float('MQ131_R2', default=None)
+        self._MQ_ADC_PIN = env.int('MQ131_MQ_ADC_PIN', default=None)
+        self._RL_VALUE = env.float('MQ131_RL_VALUE', default=None)
         self._RO_CLEAN_AIR = env.float('MQ131_RO_CLEAN_AIR', default=None)
-        self._A_EXPO = env.float('MQ131_A_EXPO')
-        self._M_EXPO = env.float('MQ131_M_EXPO')
-        self._RSRO_CLEAN_AIR = env.float('MQ131_RSRO_CLEAN_AIR')
-        self._MIN_CONCENTRATION = env.float('MQ131_MIN_CONCENTRATION')
-        self._MAX_CONCENTRATION = env.float('MQ131_MAX_CONCENTRATION')
+        self._A_EXPO = env.float('MQ131_A_EXPO', default=None)
+        self._M_EXPO = env.float('MQ131_M_EXPO', default=None)
+        self._RSRO_CLEAN_AIR = env.float('MQ131_RSRO_CLEAN_AIR', default=None)
+        self._MIN_CONCENTRATION = env.float(
+            'MQ131_MIN_CONCENTRATION', default=None)
+        self._MAX_CONCENTRATION = env.float(
+            'MQ131_MAX_CONCENTRATION', default=None)
+        self._MIN_HUMIDITY = env.float(
+            'MQ131_MIN_HUMIDITY', default=None)
+        self._MAX_HUMIDITY = env.float(
+            'MQ131_MAX_HUMIDITY', default=None)
+        self._MIN_TEMPERATURE = env.float(
+            'MQ131_MIN_TEMPERATURE', default=None)
+        self._MAX_TEMPERATURE = env.float(
+            'MQ131_MAX_TEMPERATURE', default=None)
 
-        super().__init__(R1=self._R1, R2=self._R2, MQ_ADC_PIN=self._MQ_ADC_PIN, RL_VALUE=self._RL_VALUE, RO_CLEAN_AIR=self._RO_CLEAN_AIR, A_EXPO=self._A_EXPO,
-                         M_EXPO=self._M_EXPO, RSRO_CLEAN_AIR=self._RSRO_CLEAN_AIR, MIN_CONCENTRATION=self._MIN_CONCENTRATION, MAX_CONCENTRATION=self._MAX_CONCENTRATION)
+        super().__init__(NAME=self._NAME, R1=self._R1, R2=self._R2, MQ_ADC_PIN=self._MQ_ADC_PIN, RL_VALUE=self._RL_VALUE, RO_CLEAN_AIR=self._RO_CLEAN_AIR, A_EXPO=self._A_EXPO,
+                         M_EXPO=self._M_EXPO, RSRO_CLEAN_AIR=self._RSRO_CLEAN_AIR, MIN_CONCENTRATION=self._MIN_CONCENTRATION, MAX_CONCENTRATION=self._MAX_CONCENTRATION,
+                         MAX_HUMIDITY=self._MAX_HUMIDITY, MIN_HUMIDITY=self._MIN_HUMIDITY,
+                         MAX_TEMPERATURE=self._MAX_TEMPERATURE, MIN_TEMPERATURE=self._MIN_TEMPERATURE)
 
-    def get_reading(self):
+    def calibrate(self):
         """
-        Returns the ozone value in ppb. Returns None when the gas concentration 
-        is out of range of the sensor sensibility.
+        The MQ sensor needs an warmup time before taking a reading
+        (this is not burn-in time). 
         """
-        return super().get_reading()
+        super().calibrate()
 
-    def get_ug_m3_reading(self):
+    def calibrate_ro(self, current_humidity=None, current_temperature=None):
         """
-        Returns the ozone ppb value in µg/m³ units.
+        Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
+        Otherwise, returns None
 
-        The equation to convert ppm to µg/m³ for a Z ppm concentration of a given
-        element/compost is:
+        Assuming that the sensor is in clean air, the method gets the gas
+        sensor resistance (RS) in clean air, then it divides by RSRO_CLEAN_AIR 
+        factor to obtain the Ro resistance value in clean air.
+        """
+        return super().calibrate_ro(current_humidity, current_temperature)
 
-        C = 40.9 * Z * molecular_weight(µg/m³)
+    def get_ozone(self, current_humidity=None, current_temperature=None, current_pressure=None):
+        """
+        Returns the ozone value in µg/m³ units. 
 
-        for a X ppb concentration:
+        Returns None, when:
+          - The sensor MQ sensor is not in valid environment working conditions.
 
-        C = 0.0409 * X * molecular_weight(µg/m³)
+          OR
 
-        where:
-        C: is the equivalent ppm value in µg/m³.
-        Z: is the ppm concentration of a given
-        element/compost.
-        X: is the ppb concentration of a given
-        element/compost.
-        molecular_weight: is the molecular weight in gram/mole
+          - The gas concentration is out of range of the sensor sensibility.
+
+        Parameters
+        ----------
+        current_humidity: float
+          Humidity in percentage.
+
+        current_temperature: float
+          Temperature in degrees Celsius.
+
+        pressure: float
+          Pressure in degrees hectoPascal.
 
         """
-        ozone_ppb = self.get_reading()
+
+        # The equation to convert ppm to µg/m³ for a Z ppm concentration of a given element/compost is:
+
+        # C = 12.195 * Z * (X/Y) * molecular_weight (µg/m³)
+
+        # for a M ppb concentration (ppm value = ppb value / 1000):
+        # (USED IN THIS CODE)
+        # C = 0.012195 * M * (X/Y) * molecular_weight (µg/m³)
+
+        # where:
+        # C: is the equivalent ppm value in µg/m³.
+        # Z: is the ppm concentration of a given
+        # element/compost.
+        # M: is the ppb concentration of a given
+        # element/compost.
+        # molecular_weight: is the molecular weight of the element/compost in gram/mole.
+        # X: is the current atmosphere pressure in atm.
+        # Y: is the current temperature value in Kelvin.
+
+        if(current_humidity is None):
+            raise ValueError('Humidity value must be informed')
+        if(current_temperature is None):
+            raise ValueError('Temperature value must be informed')
+        if(current_pressure is None):
+            raise ValueError('Pressure value must be informed')
+        # Reads ozone value in ppb
+
+        # The MQ sensor regression function returns the ppb value measured
+        ozone_ppb = super().get_reading(current_humidity, current_temperature)
+
+        # Pressure value conversion hPa to atm
+        atm = current_pressure / 1013.2501
+
+        # Temperature conversion °C to Kelvin
+        kelvin = current_temperature + 273.15
 
         if ozone_ppb is not None:
-            ozone_ug_m3 = 0.0409 * ozone_ppb * self._molecular_weight
+            ozone_ug_m3 = 0.012195 * ozone_ppb * \
+                (atm / kelvin) * self._molecular_weight
 
             return round(ozone_ug_m3, 3)
         else:

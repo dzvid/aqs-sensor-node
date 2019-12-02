@@ -5,14 +5,23 @@
 #   http://davidegironi.blogspot.com/2017/05/mq-gas-sensor-correlation-function.html#.XdyM5R-YXKa
 import time
 
+from environs import Env
+
 from .sensor import Sensor
 from .adc import ADC
 
+# Load enviroment variables
+env = Env()
+
 class MQSensor(Sensor):
 
+
   ######################### Hardware Related Macros #########################
-  VCC = 5.0                           # Power supply value (in Volts)
-  VCC_PI_INPUT_MAX = 3.3              # Raspberry maximum input volta (in Volts)
+  VCC = 5.0                                                # Power supply value (in Volts)
+  VCC_PI_INPUT_MAX = 3.3                                   # Raspberry maximum input volta (in Volts)
+  PREHEAT_TIME = env.int("MQ_PREHEAT_TIME", default=None)  # Preheat time in seconds, usually 30 minutes 
+  if(PREHEAT_TIME is None):
+      raise ValueError('MQ_PREHEAT_TIME must be declared.')
 
   ######################### Software Related Macros #########################
   # Defines the amount of samples to be used during the calibration phase.
@@ -24,12 +33,15 @@ class MQSensor(Sensor):
   # Sets the time interval (in seconds) between samples during the reading phase.
   READING_MODE_SAMPLES_INTERVAL = 0.5
 
-  def __init__(self, R1=None, R2=None, MQ_ADC_PIN=None, RL_VALUE=None, RO_CLEAN_AIR=None,
-  A_EXPO=None,  M_EXPO=None, RSRO_CLEAN_AIR=None, MIN_CONCENTRATION=None, MAX_CONCENTRATION=None):
+  def __init__(self, NAME=None ,R1=None, R2=None, MQ_ADC_PIN=None, RL_VALUE=None, RO_CLEAN_AIR=None,
+  A_EXPO=None,  M_EXPO=None, RSRO_CLEAN_AIR=None, MIN_CONCENTRATION=None, MAX_CONCENTRATION=None,
+  MIN_HUMIDITY=None, MAX_HUMIDITY=None, MIN_TEMPERATURE=None, MAX_TEMPERATURE=None):
     """
     Creates a MQ sensor instance.
     """
 
+    if(NAME is None):
+      raise ValueError("NAME value must be declared")
     if(R1 is None):
       raise ValueError("R1 value must be declared")
     if(R2 is None):
@@ -43,11 +55,26 @@ class MQSensor(Sensor):
     if(M_EXPO is None):
       raise ValueError("M_EXPO value must be declared")
     if(RSRO_CLEAN_AIR is None):
-      raise ValueError("RSRO_CLEAN_AIR value must be declared")
+      raise ValueError("RSRO_CLEAN_AIR factor must be declared")
     if(MIN_CONCENTRATION is None):
       raise ValueError("MIN_CONCENTRATION value must be declared")
     if(MAX_CONCENTRATION is None):
       raise ValueError("MAX_CONCENTRATION value must be declared")
+    if(MIN_HUMIDITY is None):
+      raise ValueError("MIN_HUMIDITY value must be declared")
+    if(MAX_HUMIDITY is None):
+      raise ValueError("MAX_HUMIDITY value must be declared")
+    if(MIN_TEMPERATURE is None):
+      raise ValueError("MIN_TEMPERATURE value must be declared")
+    if(MAX_TEMPERATURE is None):
+      raise ValueError("MAX_TEMPERATURE value must be declared")
+    
+    if(RO_CLEAN_AIR is None):
+      print("RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+        to calculate Ro value in clean air.")
+    else:
+      print("RO_CLEAN_AIR value declared.")
+
 
     #### CONCENTRATION CALCULATION ####
     # MQ gas sensor correlation function estimated from datasheet
@@ -67,21 +94,28 @@ class MQSensor(Sensor):
     self.R2 = R2                       # 20kOhms
 
     #### MQSENSOR Sensor ####
+    self.NAME = NAME                  # MQ Sensor name/alias
+
+    # Environment working conditions
+    self.MIN_HUMIDITY = MIN_HUMIDITY 
+    self.MAX_HUMIDITY = MAX_HUMIDITY 
+    self.MIN_TEMPERATURE = MIN_TEMPERATURE 
+    self.MAX_TEMPERATURE = MAX_TEMPERATURE 
+
     # Load resistance (RL) of 30KOhms (=Req=(R1+R2))
     self.RL_VALUE = RL_VALUE
 
-    self.RSRO_CLEAN_AIR = RSRO_CLEAN_AIR  # RSRO_CLEAN_AIR = RS/RO in pure air
-                                          # obtained from datasheet using webplotdigitilizer
+    self.RSRO_CLEAN_AIR = RSRO_CLEAN_AIR                 # RSRO_CLEAN_AIR = RS/RO in pure air
+                                                         # obtained from datasheet using webplotdigitilizer
 
-    if(RO_CLEAN_AIR is None):
-      self.RO_CLEAN_AIR = self.calibrate()  # RO_CLEAN_AIR = Gas sensor resistance in clean air
-    else:
-      self.RO_CLEAN_AIR = RO_CLEAN_AIR
-
-                                                         # By the datasheet figure we have to select 
+                                                             # By the datasheet figure we have to select 
                                                          # the max and min gas concentration sensibility points.
     self.MIN_CONCENTRATION = MIN_CONCENTRATION           # minimum concentration sensibility of gas sensor
     self.MAX_CONCENTRATION = MAX_CONCENTRATION           # maximum concentration sensibility of gas sensor
+
+
+    self.RO_CLEAN_AIR = RO_CLEAN_AIR                      # RO_CLEAN_AIR = Gas sensor resistance in clean air
+
 
   
   def _read_RS(self):
@@ -136,28 +170,45 @@ class MQSensor(Sensor):
 
     return RS
 
-  def calibrate(self):
+  def calibrate_ro(self,  current_humidity=None, current_temperature=None):
     """
+    Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
+    Otherwise, returns None
+  
     Assuming that the sensor is in clean air, the function uses the method _read_RS
     to get the gas sensor resistance (RS) in clean air, then it divides by RSRO_CLEAN_AIR value
     to obtain the RO_CLEAN_AIR value in clean air.
+    
     """
-    print("RO_CLEAN_AIR not informed!\nCalibrating gas sensor...")
-    rs = 0.0
+    if(current_humidity is None):
+        raise ValueError('Humidity value must be informed')
+    if(current_temperature is None):
+            raise ValueError('Temperature value must be informed')
 
-    for i in range(self.CALIBRATION_SAMPLES):
-        rs += self._read_RS()
-        time.sleep(self.CALIBRATION_SAMPLES_INTERVAL)
 
-    rs = rs / self.CALIBRATION_SAMPLES    # Calculate the readings average
+    print('Calibrating  Sensor {0} Ro value in clean air...'.format(self.NAME))
+    # Check if MQ sensor is in valid environment working conditions
+    if self._check_working_conditions(current_temperature, current_humidity):  
 
-    ro = rs / self.RSRO_CLEAN_AIR         # Calculate RO value in clean air
-                                          # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
-                                          # RSRO_CLEAN_AIR is obtained from the datasheet
-    print("Calibrating gas sensor...done!")
-    print("RO_CLEAN_AIR = {0}".format(ro))
+      rs = 0.0
 
-    return ro
+      for i in range(self.CALIBRATION_SAMPLES):
+          rs += self._read_RS()
+          time.sleep(self.CALIBRATION_SAMPLES_INTERVAL)
+
+      rs = rs / self.CALIBRATION_SAMPLES    # Calculate the readings average
+
+      ro = rs / self.RSRO_CLEAN_AIR         # Calculate RO value in clean air
+                                            # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
+                                            # RSRO_CLEAN_AIR is obtained from the datasheet
+      print("Calibrating Ro in clean air...done!")
+      print("{0} RO_CLEAN_AIR = {1}".format(self.NAME, ro))
+    else:
+      print("Calibrating Ro in clean air...failed!")
+      print("{0} RO_CLEAN_AIR = {1}".format(self.NAME, None))
+      print("Sensor {0} is not in environment working conditions: Invalid temperature or humidity condition!".format(self.NAME))
+
+
 
   def _get_average_rs(self):
     """
@@ -176,11 +227,64 @@ class MQSensor(Sensor):
     return rs
 
 
+  def calibrate(self):
+      """
+      The MQ sensors needs an warmup time before taking a reading, usually 30 minutes
+      for these kind of sensors. It can be done once for all the connected 
+      sensors.
+      """
+      print('Calibrating sensor pre-heat time ({0} seconds)...'.format(self.PREHEAT_TIME))
+      
+      time.sleep(self.PREHEAT_TIME)
+      
+      print('Calibrating sensor pre-heat time ({0} seconds)... done!'.format(self.PREHEAT_TIME))
 
-  def get_reading(self):
+  def _check_temperature_range(self, current_temperature=None):
     """
-    Returns the gas concentration measured. Returns None when the gas concentration is out of range of the sensor sensibility.
+    Returns True if current temperature is in the temperature working condition range of the MQ sensor.
+    Otherwise, returns False. 
     """
+    if(current_temperature >= self.MIN_TEMPERATURE and current_temperature<=self.MAX_TEMPERATURE):
+      return True
+    return False
+
+  def _check_humidity_range(self, current_humidity=None):
+    """
+    Returns True if current humidity is in the humidity working condition range of the MQ sensor.
+    Otherwise, returns False. 
+    """
+    if(current_humidity >= self.MIN_HUMIDITY and current_humidity < self.MAX_HUMIDITY):
+      return True
+    return False
+
+  def _check_working_conditions(self, current_humidity=None, current_temperature=None):
+    """
+    Return True if the MQ sensor is in environment working range. Otherwise, returns False.
+    """
+    if (self._check_temperature_range(current_temperature) and self._check_humidity_range(current_humidity)):
+      return True
+    return False
+
+
+  def get_reading(self, current_humidity=None, current_temperature=None):
+    """
+    Returns the gas concentration measured. 
+
+    Returns None, when:
+      - The sensor MQ sensor is not in valid environment working conditions.
+
+      OR
+
+      - The gas concentration is out of range of the sensor sensibility.
+    """
+    if(self.RO_CLEAN_AIR is None):
+      raise ValueError("RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+        to calculate Ro value in clean air.")
+
+    # Check if MQ sensor is not in valid environment working conditions
+    if not self._check_working_conditions(current_humidity, current_temperature):
+      return None
+    
     # Get actual rs and rsro ratio
     rs = self._get_average_rs()
     ratio_rsro = rs / self.RO_CLEAN_AIR
@@ -190,5 +294,5 @@ class MQSensor(Sensor):
 
     if(gas_concentration >= self.MIN_CONCENTRATION and gas_concentration <= self.MAX_CONCENTRATION ):       
       return round(gas_concentration, 3)
-    else:
-      return None
+    else: 
+      return None  
