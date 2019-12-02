@@ -57,8 +57,17 @@ class MQ131(MQSensor):
         Assuming that the sensor is in clean air, the method gets the gas
         sensor resistance (RS) in clean air, then it divides by RSRO_CLEAN_AIR 
         factor to obtain the Ro resistance value in clean air.
+
+
+        Parameters
+        ----------
+        current_humidity: float
+          Humidity in percentage.
+
+        current_temperature: float
+          Temperature in degrees Celsius.
         """
-        return super().calibrate_ro(current_humidity, current_temperature)
+        return super().calibrate_ro(current_humidity=current_humidity, current_temperature=current_temperature)
 
     def get_ozone(self, current_humidity=None, current_temperature=None, current_pressure=None):
         """
@@ -111,7 +120,8 @@ class MQ131(MQSensor):
         # Reads ozone value in ppb
 
         # The MQ sensor regression function returns the ppb value measured
-        ozone_ppb = super().get_reading(current_humidity, current_temperature)
+        ozone_ppb = super().get_reading(current_humidity=current_humidity,
+                                        current_temperature=current_temperature)
 
         # Pressure value conversion hPa to atm
         atm = current_pressure / 1013.2501
