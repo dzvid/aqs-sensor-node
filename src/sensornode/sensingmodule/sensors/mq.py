@@ -234,11 +234,11 @@ class MQSensor(Sensor):
       for these kind of sensors. It can be done once for all the connected 
       sensors.
       """
-      print('Calibrating sensor pre-heat time ({0} seconds)...'.format(self.PREHEAT_TIME))
+      print('Calibrating MQ sensor pre-heat time ({0} seconds)...'.format(self.PREHEAT_TIME))
       
       time.sleep(self.PREHEAT_TIME)
       
-      print('Calibrating sensor pre-heat time ({0} seconds)... done!'.format(self.PREHEAT_TIME))
+      print('Calibrating MQ sensor pre-heat time ({0} seconds)... done!'.format(self.PREHEAT_TIME))
 
   def _check_temperature_range(self, current_temperature=None):
     """

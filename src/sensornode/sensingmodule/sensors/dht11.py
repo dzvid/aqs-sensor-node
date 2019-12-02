@@ -34,8 +34,7 @@ class DHT11(Sensor):
 
         print('Calibrating DHT11 sensor...done!')
 
-    @property
-    def humidity(self):
+    def get_humidity(self):
         """
         Returns a float percentage value representing the the humidity measured by the DHT11 sensor. 
         According to the datasheet the time interval between taking consecutive readings 
@@ -55,7 +54,7 @@ class DHT11(Sensor):
             self._sensor, self._pin)
 
         if humidity is not None:
-            return humidity
+            return round(humidity, 3)
         else:
             print("Reading from DHT failed. Try again!")
             return None

@@ -36,17 +36,15 @@ class BMP280(Sensor):
         """
         Not necessary to calibrate the BMP280.
         """
-        pass
+        print('BMP280 not necessary to calibrate.')
 
-    @property
-    def pressure(self):
+    def get_pressure(self):
         """
         The compensated pressure (current air pressure at your altitude)
         in hectoPascals (hPa). Returns None if pressure measurement is disabled.
         """
-        return self._bmp_sensor.pressure
+        return round(self._bmp_sensor.pressure, 3)
 
-    @property
-    def temperature(self):
+    def get_temperature(self):
         """The compensated temperature in degrees Celsius."""
-        return self._bmp_sensor.temperature
+        return round(self._bmp_sensor.temperature, 3)
