@@ -203,6 +203,8 @@ class MQSensor(Sensor):
                                             # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
                                             # RSRO_CLEAN_AIR is obtained from the datasheet
 
+      ro = round(ro, 3)
+
       print("Calibrating Ro in clean air...done!")
       print("{0} RO_CLEAN_AIR = {1}".format(self.NAME, ro))
     else:
