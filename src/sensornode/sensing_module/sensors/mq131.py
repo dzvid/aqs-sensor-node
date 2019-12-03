@@ -70,7 +70,7 @@ class MQ131(MQSensor):
         """
         return super().calibrate_ro(current_humidity=current_humidity, current_temperature=current_temperature)
 
-    def get_ozone(self, current_humidity=None, current_temperature=None, current_pressure=None):
+    def get_ozone(self, current_humidity=None, current_temperature=None):
         """
         Returns the ozone value in µg/m³ units. 
 
@@ -88,51 +88,38 @@ class MQ131(MQSensor):
 
         current_temperature: float
           Temperature in degrees Celsius.
-
-        pressure: float
-          Pressure in degrees hectoPascal.
-
         """
 
-        # The equation to convert ppm to µg/m³ for a Z ppm concentration of a given element/compost is:
+        #  To convert ppm or ppb to µg/m³ in 1 atm (= 1013.2051 hectPa = 760 mmHg) and 25°C
 
-        # C = 12195 * Z * (X/Y) * molecular_weight (µg/m³)
+        #     The equation to convert ppm to µg/m³ for a Z ppm concentration of a given element/compost is:
 
-        # for a M ppb concentration (ppm value = ppb value / 1000):
-        # (USED IN THIS CODE)
-        # C = 12.195 * M * (X/Y) * molecular_weight (µg/m³)
+        #     C = 40.9 * Z * molecular_weight (µg/m³)
 
-        # where:
-        # C: is the equivalent ppm value in µg/m³.
-        # Z: is the ppm concentration of a given
-        # element/compost.
-        # M: is the ppb concentration of a given
-        # element/compost.
-        # molecular_weight: is the molecular weight of the element/compost in gram/mole.
-        # X: is the current atmosphere pressure in atm.
-        # Y: is the current temperature value in Kelvin.
+        #     for a M ppb (ppm = ppb / 1000) concentration  (USED  IN THE CODE):
+
+        #     C = 0.0409 * M * molecular_weight (µg/m³)
+
+        #     where:
+        #     C: is the equivalent ppm value in µg/m³.
+        #     Z: is the ppm concentration of a given
+        #     element/compost.
+        #     M: is the ppb concentration of a given
+        #     element/compost.
+        #     molecular_weight: is the molecular weight of the element/compost in gram/mole.
 
         if(current_humidity is None):
             raise ValueError('Humidity value must be informed')
         if(current_temperature is None):
             raise ValueError('Temperature value must be informed')
-        if(current_pressure is None):
-            raise ValueError('Pressure value must be informed')
-        # Reads ozone value in ppb
 
-        # The MQ sensor regression function returns the ppb value measured
+        # Reads ozone value in ppb
+        # The MQ sensor regression function for ozone returns the ppb value measured
         ozone_ppb = super().get_reading(current_humidity=current_humidity,
                                         current_temperature=current_temperature)
 
-        # Pressure value conversion hPa to atm
-        atm = current_pressure / 1013.2501
-
-        # Temperature conversion °C to Kelvin
-        kelvin = current_temperature + 273.15
-
         if ozone_ppb is not None:
-            ozone_ug_m3 = 12.195 * ozone_ppb * \
-                (atm / kelvin) * self._molecular_weight
+            ozone_ug_m3 = 0.0409 * ozone_ppb * self._molecular_weight
 
             return round(ozone_ug_m3, 3)
         else:
