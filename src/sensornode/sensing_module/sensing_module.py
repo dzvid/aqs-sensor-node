@@ -89,7 +89,7 @@ class SensingModule:
                 current_humidity=humidity, current_temperature=temperature)
 
             pm2_5 = particulate_matter['pm2_5']
-            pm10 = particulate_matter['10']
+            pm10 = particulate_matter['pm10']
 
             # Returns a dict containing the reading
             reading = dict()
