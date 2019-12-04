@@ -1,7 +1,9 @@
 import time
 
 from environs import Env
+
 from pms7003 import PmsSensorException
+from sensors.mq import MQSensorException
 
 from sensors.bmp280 import BMP280
 from sensors.dht11 import DHT11
@@ -104,6 +106,6 @@ class SensingModule:
 
             return reading
 
-        except (PmsSensorException, ValueError, RuntimeError) as e:
+        except (MQSensorException, PmsSensorException, ValueError, RuntimeError) as e:
             print("Failed to get sensors reading, try again...\n", e)
             return None

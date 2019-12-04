@@ -95,9 +95,9 @@ class PMS7003(Sensor):
         """
 
         if(current_humidity is None):
-            raise ValueError('Humidity value must be informed')
+            raise ValueError('PMS7003: Humidity value must be informed')
         if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
+            raise ValueError('PMS7003: Temperature value must be informed')
 
         try:
 

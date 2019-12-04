@@ -30,7 +30,7 @@ class BMP280(Sensor):
             self._bmp_sensor.seaLevelhPa = self._local_sea_level
         else:
             raise ValueError(
-                'Necessary to inform location\'s pressure (in hPa) at sea level')
+                'BMP280: Necessary to inform location\'s pressure (in hPa) at sea level')
 
     def calibrate(self):
         """
