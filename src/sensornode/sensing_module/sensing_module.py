@@ -3,6 +3,8 @@ import time
 from environs import Env
 
 from pms7003 import PmsSensorException
+from sensors.bmp280 import BMP280Exception
+from sensors.dht11 import DHT11Exception
 from sensors.mq import MQSensorException
 
 from sensors.bmp280 import BMP280
@@ -60,19 +62,27 @@ class SensingModule:
 
     def read_sensors(self):
         """
-        Read the sensors. If a error happens, returns None.
-        WARNING: The reading method stays locked until it gets a valid humity reading from DHT11
+        Read the sensors.
+
+        Returns the values in a dictionary, if the reading is successful.
+
+        Returns None, If an error occurs when reading the sensors.
         """
 
-        # Read humidity from DHT11. Sometimes DHT11 will not return a valid humidity reading.
-        # So it keeps trying to read humidity value until it gets a valid reading.
-        # Takes a 2 second interval between readings following datasheet recomendations.
         try:
-            humidity = None
+            # humidity = None
+            # WARNING: using the loop below the reading method stays locked until
+            #  it gets a valid humity reading from DHT11
+            # Read humidity from DHT11. Sometimes DHT11 will not return a valid humidity reading.
+            # So it keeps trying to read humidity value until it gets a valid reading.
+            # Takes a 2 second interval between readings following datasheet recomendations.
 
-            while humidity == None:
-                humidity = self._dht11.get_humidity()
-                time.sleep(2)
+            # while humidity == None:
+            #     humidity = self._dht11.get_humidity()
+            #     time.sleep(2)
+
+            # Reads DHT11
+            humidity = self._dht11.get_humidity()
 
             # Reads BMP280
             temperature = self._bmp280.get_temperature()
@@ -106,6 +116,6 @@ class SensingModule:
 
             return reading
 
-        except (MQSensorException, PmsSensorException, ValueError, RuntimeError) as e:
+        except (DHT11Exception, BMP280Exception, MQSensorException, PmsSensorException, ValueError, RuntimeError) as e:
             print("Failed to get sensors reading, try again...\n", e)
             return None
