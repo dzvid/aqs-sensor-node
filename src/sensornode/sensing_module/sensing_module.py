@@ -19,6 +19,9 @@ env.read_env()
 
 
 class SensingModule:
+    """
+    Class that represents the sensing module of the Sensor Node.
+    """
 
     def __init__(self):
         self._dht11 = DHT11()
@@ -34,9 +37,12 @@ class SensingModule:
         # Since the calibration time is the same for the mq sensors
         # you can call the base class calibrate method from mq131 or mq135
         # self._mq135.calibrate()
-        # self._mq131.calibrate()
+        self._mq131.calibrate()
 
     def calibrate_mq135_ro(self):
+        """
+        Calibrate Sensor MQ-135 Ro resistance value in clean air.
+        """
 
         current_humidity = self._dht11.get_humidity()
         current_temperature = self._bmp280.get_temperature()
@@ -49,7 +55,9 @@ class SensingModule:
                    value from sensors, try again...")
 
     def calibrate_mq131_ro(self):
-
+        """
+        Calibrate Sensor MQ-131 Ro resistance value in clean air.
+        """
         current_humidity = self._dht11.get_humidity()
         current_temperature = self._bmp280.get_temperature()
 
@@ -81,7 +89,7 @@ class SensingModule:
             #     humidity = self._dht11.get_humidity()
             #     time.sleep(2)
 
-            # Reads DHT11
+            # Reads DHT11 (Can take up to 30 seconds)
             humidity = self._dht11.get_humidity()
 
             # Reads BMP280

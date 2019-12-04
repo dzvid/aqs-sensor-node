@@ -57,6 +57,7 @@ class DHT11(Sensor):
         If this happens, the method returns None (and it is necessary to try again!).
         """
 
+        # (Can take up to 30 seconds)
         humidity, _temperature = Adafruit_DHT.read_retry(
             self._sensor, self._pin)
 
