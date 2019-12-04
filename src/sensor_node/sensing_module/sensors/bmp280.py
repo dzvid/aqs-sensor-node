@@ -11,6 +11,14 @@ from .sensor import Sensor
 env = Env()
 
 
+class BMP280Exception(Exception):
+    """
+    Implies a problem with sensor communication that is unlikely to re-occur
+    (e.g. I2C (or SPI) connection glitch or wiring problem).
+    """
+    pass
+
+
 class BMP280(Sensor):
     """
     Class that represents the BMP280 Sensor.
@@ -30,7 +38,7 @@ class BMP280(Sensor):
             self._bmp_sensor.seaLevelhPa = self._local_sea_level
         else:
             raise ValueError(
-                'Necessary to inform location\'s pressure (in hPa) at sea level')
+                'BMP280: Necessary to inform location\'s pressure (in hPa) at sea level')
 
     def calibrate(self):
         """
@@ -43,8 +51,22 @@ class BMP280(Sensor):
         The compensated pressure (current air pressure at your altitude)
         in hectoPascals (hPa). Returns None if pressure measurement is disabled.
         """
-        return round(self._bmp_sensor.pressure, 3)
+        try:
+
+            return round(self._bmp_sensor.pressure, 3)
+
+        except (OSError):
+            raise BMP280Exception("I/O error: Problem reading BMP280 sensor, communication \
+                                  error that is unlikely to re-occur \
+                                  (e.g. I2C (or SPI) connection glitch or wiring problem.")
 
     def get_temperature(self):
         """The compensated temperature in degrees Celsius."""
-        return round(self._bmp_sensor.temperature, 3)
+        try:
+
+            return round(self._bmp_sensor.temperature, 3)
+
+        except (OSError):
+            raise BMP280Exception("I/O error: Problem reading BMP280 sensor, communication \
+                                  error that is unlikely to re-occur \
+                                  (e.g. I2C (or SPI) connection glitch or wiring problem.")

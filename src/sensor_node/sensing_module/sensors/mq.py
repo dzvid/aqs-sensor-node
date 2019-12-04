@@ -14,7 +14,21 @@ from .adc import ADC
 env = Env()
 env.read_env()
 
+
+class MQSensorException(Exception):
+  """
+  Implies a problem with sensor communication that is unlikely to re-occur (e.g. serial connection glitch).
+  Prevents from returning corrupt measurements, such as divison by zero error when VPIN returns 0 Volts 
+  Which should not happen in practice, but sometimes there is a bad connection in the
+  protoboard.
+  """
+  pass
+
 class MQSensor(Sensor):
+  """
+  Base MQ-X Sensor object. This class reads the parameters and enables the 
+  sensor for continuous reads.
+  """
 
 
   ######################### Hardware Related Macros #########################
@@ -164,12 +178,20 @@ class MQSensor(Sensor):
     # Using the VPIN voltage value instead of the raw value from adc.
     # VPIN = (self._adc.read_raw_value() * self.VCC_PI_INPUT_MAX) / self._adc.read_adc_max_resolution()  # Convert the adc discrete value
     #                                                                                                    # to a voltage equivalent value
-    # TODO: Check requirements for when VOUT is 0V
-    VPIN = self._adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
-    VOUT = ((self.R1 + self.R2) / self.R2) * VPIN
-    RS = (self.VCC / VOUT - 1.0) * self.RL_VALUE
+    # Check if VOUT is 0V (VOUT is derived from VPIN, so we are checking if VPIN is 0V.
+    # In practice, VPIN should not be 0V).
+    try:  
 
-    return RS
+      VPIN = self._adc.read_voltage()                       # The voltage will be in the 0 - 3.3V range
+      VOUT = ((self.R1 + self.R2) / self.R2) * VPIN
+      RS = (self.VCC / VOUT - 1.0) * self.RL_VALUE
+
+      return RS
+
+    except ZeroDivisionError:
+        raise MQSensorException('ZeroDivisionError: Failed to read MQ sensor, VPIN returned 0V, check wiring!')
+    except MQSensorException:
+        raise MQSensorException('Failed to read MQ sensor. Check wiring and parameter values!')
 
   def calibrate_ro(self,  current_humidity=None, current_temperature=None):
     """
@@ -184,7 +206,7 @@ class MQSensor(Sensor):
     if(current_humidity is None):
         raise ValueError('Humidity value must be informed')
     if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
+        raise ValueError('Temperature value must be informed')
 
 
     print('Calibrating  Sensor {0} Ro value in clean air...'.format(self.NAME))
