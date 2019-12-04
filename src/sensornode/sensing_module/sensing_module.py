@@ -1,11 +1,13 @@
 import time
 
 from environs import Env
+from pms7003 import PmsSensorException
 
 from sensors.bmp280 import BMP280
 from sensors.dht11 import DHT11
 from sensors.mq135 import MQ135
 from sensors.mq131 import MQ131
+from sensors.pms7003 import PMS7003
 
 # Load enviroment variables
 env = Env()
@@ -15,14 +17,16 @@ env.read_env()
 class SensingModule:
 
     def __init__(self):
-        self._dht = DHT11()
-        self._bmp = BMP280()
+        self._dht11 = DHT11()
+        self._bmp280 = BMP280()
+        self._pms7003 = PMS7003()
         self._mq131 = MQ131()
         self._mq135 = MQ135()
 
     def calibrate_sensors(self):
-        self._dht.calibrate()
-        self._bmp.calibrate()
+        self._dht11.calibrate()
+        self._bmp280.calibrate()
+        self._pms7003.calibrate()
         # Since the calibration time is the same for the mq sensors
         # you can call the base class calibrate method from mq131 or mq135
         # self._mq135.calibrate()
@@ -30,8 +34,8 @@ class SensingModule:
 
     def calibrate_mq135_ro(self):
 
-        current_humidity = self._dht.get_humidity()
-        current_temperature = self._bmp.get_temperature()
+        current_humidity = self._dht11.get_humidity()
+        current_temperature = self._bmp280.get_temperature()
 
         if(current_humidity is not None and current_temperature is not None):
             self._mq135.calibrate_ro(
@@ -42,8 +46,8 @@ class SensingModule:
 
     def calibrate_mq131_ro(self):
 
-        current_humidity = self._dht.get_humidity()
-        current_temperature = self._bmp.get_temperature()
+        current_humidity = self._dht11.get_humidity()
+        current_temperature = self._bmp280.get_temperature()
 
         if(current_humidity is not None and current_temperature is not None):
             self._mq131.calibrate_ro(
@@ -65,12 +69,12 @@ class SensingModule:
             humidity = None
 
             while humidity == None:
-                humidity = self._dht.get_humidity()
+                humidity = self._dht11.get_humidity()
                 time.sleep(2)
 
             # Reads BMP280
-            temperature = self._bmp.get_temperature()
-            pressure = self._bmp.get_pressure()
+            temperature = self._bmp280.get_temperature()
+            pressure = self._bmp280.get_pressure()
 
             # Reads MQ135
             carbon_monoxide = self._mq135.get_carbon_monoxide(
@@ -80,9 +84,12 @@ class SensingModule:
             ozone = self._mq131.get_ozone(
                 current_humidity=humidity, current_temperature=temperature)
 
-            # Boilerplate
-            pm2_5 = None
-            pm10 = None
+            # Reads PMS7003
+            particulate_matter = self._pms7003.get_particulate_matter(
+                current_humidity=humidity, current_temperature=temperature)
+
+            pm2_5 = particulate_matter['pm2_5']
+            pm10 = particulate_matter['pm10']
 
             # Returns a dict containing the reading
             reading = dict()
@@ -97,6 +104,6 @@ class SensingModule:
 
             return reading
 
-        except (ValueError, RuntimeError) as e:
+        except (PmsSensorException, ValueError, RuntimeError) as e:
             print("Failed to get sensors reading, try again...\n", e)
             return None
