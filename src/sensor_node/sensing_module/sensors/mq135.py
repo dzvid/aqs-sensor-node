@@ -85,11 +85,5 @@ class MQ135(MQSensor):
         current_temperature: float
           Temperature in degrees Celsius.
         """
-
-        if(current_humidity is None):
-            raise ValueError('Humidity value must be informed')
-        if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
-
         return super().get_reading(current_humidity=current_humidity,
                                    current_temperature=current_temperature)
