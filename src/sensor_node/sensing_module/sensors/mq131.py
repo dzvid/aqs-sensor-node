@@ -108,11 +108,6 @@ class MQ131(MQSensor):
         #     element/compost.
         #     molecular_weight: is the molecular weight of the element/compost in gram/mole.
 
-        if(current_humidity is None):
-            raise ValueError('Humidity value must be informed')
-        if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
-
         # Reads ozone value in ppb
         # The MQ sensor regression function for ozone returns the ppb value measured
         ozone_ppb = super().get_reading(current_humidity=current_humidity,
