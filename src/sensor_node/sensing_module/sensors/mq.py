@@ -17,9 +17,9 @@ env.read_env()
 
 class MQSensorException(Exception):
     """
-    Implies a problem with sensor communication that is unlikely to re-occur (e.g. serial connection glitch).
+    Implies a problem with sensor communication that is unlikely to re-occur (e.g. connection glitch).
     Prevents from returning corrupt measurements, such as divison by zero error when VPIN returns 0 Volts
-    Which should not happen in practice, but sometimes there is a bad connection in the
+    which should not happen in practice, but sometimes there is a bad connection in the
     protoboard.
     """
     pass
