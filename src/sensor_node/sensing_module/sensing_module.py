@@ -44,29 +44,39 @@ class SensingModule:
         Calibrate Sensor MQ-135 Ro resistance value in clean air.
         """
 
-        current_humidity = self._dht11.get_humidity()
-        current_temperature = self._bmp280.get_temperature()
+        try:
+            current_humidity = self._dht11.get_humidity()
+            current_temperature = self._bmp280.get_temperature()
 
-        if(current_humidity is not None and current_temperature is not None):
             self._mq135.calibrate_ro(
                 current_humidity=current_humidity, current_temperature=current_temperature)
-        else:
-            print("Could not get current humidity/temperature \
-                   value from sensors, try again...")
+        except (DHT11Exception) as e:
+            print("Could not get current humidity \
+                   value from the sensor, try again...", e)
+        except(BMP280Exception) as e:
+            print("Could not get current temperature \
+                   value from the sensor, try again...", e)
+        except(MQSensorException, ValueError, RuntimeError) as e:
+            print(e)
 
     def calibrate_mq131_ro(self):
         """
         Calibrate Sensor MQ-131 Ro resistance value in clean air.
         """
-        current_humidity = self._dht11.get_humidity()
-        current_temperature = self._bmp280.get_temperature()
+        try:
+            current_humidity = self._dht11.get_humidity()
+            current_temperature = self._bmp280.get_temperature()
 
-        if(current_humidity is not None and current_temperature is not None):
             self._mq131.calibrate_ro(
                 current_humidity=current_humidity, current_temperature=current_temperature)
-        else:
-            print("Could not get current humidity/temperature \
-                   value from sensors, try again...")
+        except (DHT11Exception) as e:
+            print("Could not get current humidity \
+                   value from the sensor, try again...", e)
+        except(BMP280Exception) as e:
+            print("Could not get current temperature \
+                   value from the sensor, try again...", e)
+        except(MQSensorException, ValueError, RuntimeError) as e:
+            print(e)
 
     def read_sensors(self):
         """

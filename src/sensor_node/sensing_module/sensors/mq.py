@@ -189,7 +189,7 @@ class MQSensor(Sensor):
       return RS
 
     except ZeroDivisionError:
-        raise MQSensorException('Failed to read MQ sensor: VPIN returned 0V, check wiring!')
+        raise MQSensorException('ZeroDivisionError: Failed to read MQ sensor, VPIN returned 0V, check wiring!')
     except MQSensorException:
         raise MQSensorException('Failed to read MQ sensor. Check wiring and parameter values!')
 
@@ -206,7 +206,7 @@ class MQSensor(Sensor):
     if(current_humidity is None):
         raise ValueError('Humidity value must be informed')
     if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
+        raise ValueError('Temperature value must be informed')
 
 
     print('Calibrating  Sensor {0} Ro value in clean air...'.format(self.NAME))
