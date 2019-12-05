@@ -1,6 +1,16 @@
+<<<<<<< Updated upstream
 from ibrdtn_daemon import IbrdtnDaemon
 
 from ibrdtn_daemon import DaemonInstanceCreationError, DaemonConnectionRefusedError
+=======
+from environs import Env
+
+from ibrdtn_daemon import IbrdtnDaemon, DaemonInstanceCreationError, DaemonConnectionRefusedError
+
+# Load enviroment variables
+env = Env()
+env.read_env()
+>>>>>>> Stashed changes
 
 
 class ClientCreationError(Exception):
@@ -15,7 +25,14 @@ class CommunicationModule:
         try:
             # Create IBRDTN daemon client
             self._dtn_client = IbrdtnDaemon()
-            self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY = False
+
+            self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY = env.bool(
+                'DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY', default=None)
+
+            if self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY is None:
+                raise DaemonInstanceCreationError(
+                    'DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY value must be declared.')
+
         except (DaemonInstanceCreationError, DaemonConnectionRefusedError) as error:
             raise ClientCreationError(
                 'Failed to create a communication module instance: ', error)
