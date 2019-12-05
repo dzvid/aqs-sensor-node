@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-from ibrdtn_daemon import IbrdtnDaemon
-
-from ibrdtn_daemon import DaemonInstanceCreationError, DaemonConnectionRefusedError
-=======
 from environs import Env
 
 from ibrdtn_daemon import IbrdtnDaemon, DaemonInstanceCreationError, DaemonConnectionRefusedError
@@ -10,7 +5,6 @@ from ibrdtn_daemon import IbrdtnDaemon, DaemonInstanceCreationError, DaemonConne
 # Load enviroment variables
 env = Env()
 env.read_env()
->>>>>>> Stashed changes
 
 
 class ClientCreationError(Exception):
