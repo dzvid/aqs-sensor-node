@@ -9,6 +9,7 @@ from .sensor import Sensor
 
 # Load enviroment variables
 env = Env()
+env.read_env()
 
 
 class BMP280Exception(Exception):

@@ -8,6 +8,7 @@ from .sensor import Sensor
 
 # Load enviroment variables
 env = Env()
+env.read_env()
 
 
 class DHT11Exception(Exception):
