@@ -38,7 +38,7 @@ class DaemonBundleUploadError(IbrdtnDaemonException):
 
 class IbrdtnDaemon():
     """
-    Class to interface to the IBRDTN daemon API.
+    Class to interface the communication with the IBRDTN daemon API.
     """
 
     def __init__(self):
@@ -75,6 +75,9 @@ class IbrdtnDaemon():
         self._create_socket_and_stream()
 
     def _create_socket_and_stream(self):
+        """
+        Creates the socket and stream (file object aka file descriptor) to communicate with the DTN daemon.
+        """
         try:
             # Create the socket to communicate with the DTN daemon
             self._daemon_socket = socket.socket()
@@ -102,7 +105,6 @@ class IbrdtnDaemon():
             self._DTN_SOURCE_EID = self._daemon_stream.readline().rstrip()
             # Read the last empty line of the response
             self._daemon_stream.readline()
-
         except ConnectionRefusedError:
             raise DaemonConnectionRefusedError(
                 "ConnectionRefusedError: Failed to create an instance.\nError while trying to connect to the IBRDTN daemon.\nIs IBRDTN daemon running?")
@@ -127,7 +129,7 @@ class IbrdtnDaemon():
                 The message payload to be send.
         """
         try:
-            json_object = json.loads(payload)
+            json.loads(payload)
         except JSONDecodeError as e:
             print(e)
         except ValueError as e:
