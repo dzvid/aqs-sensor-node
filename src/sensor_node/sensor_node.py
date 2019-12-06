@@ -36,7 +36,7 @@ class SensorNode:
     def __init__(self):
         try:
             # Load sensor node parameters
-            self._SENSOR_NODE_UUID = env.uuid('SENSOR_NODE_UUID', default=None)
+            self._SENSOR_NODE_UUID = env.str('SENSOR_NODE_UUID', default=None)
             self._SENSOR_NODE_READING_INTERVAL = env.str(
                 'SENSOR_NODE_READING_INTERVAL', default=None)
             self._SENSOR_NODE_MQTT_DATA_TOPIC = env.str(
