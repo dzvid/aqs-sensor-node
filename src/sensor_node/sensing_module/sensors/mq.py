@@ -88,10 +88,10 @@ class MQSensor(Sensor):
             raise ValueError("MAX_TEMPERATURE value must be declared")
 
         if(RO_CLEAN_AIR is None):
-            print("RO_CLEAN_AIR value must be declared. Use calibrate_ro \
-        to calculate Ro value in clean air.")
+            print("Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+        to calculate Ro value in clean air.".format(NAME))
         else:
-            print("RO_CLEAN_AIR value declared.")
+            print("Sensor {0} RO_CLEAN_AIR value declared.".format(NAME))
 
         #### CONCENTRATION CALCULATION ####
         # MQ gas sensor correlation function estimated from datasheet
