@@ -18,17 +18,34 @@ env = Env()
 env.read_env()
 
 
+class SensingModuleException(Exception):
+    """
+    Generic Sensing Module error.
+    """
+
+
+class SensingModuleCreationError(SensingModuleException):
+    """
+    Failed to create a Sensing Module instance.
+    """
+
+
 class SensingModule:
     """
     Class that represents the sensing module of the Sensor Node.
     """
 
     def __init__(self):
-        self._dht11 = DHT11()
-        self._bmp280 = BMP280()
-        self._pms7003 = PMS7003()
-        self._mq131 = MQ131()
-        self._mq135 = MQ135()
+
+        try:
+            self._dht11 = DHT11()
+            self._bmp280 = BMP280()
+            self._pms7003 = PMS7003()
+            self._mq131 = MQ131()
+            self._mq135 = MQ135()
+        except ValueError as error:
+            raise SensingModuleCreationError(
+                'Failed to create the Sensing Module: ', error)
 
     def calibrate_sensors(self):
         self._dht11.calibrate()

@@ -7,9 +7,15 @@ env = Env()
 env.read_env()
 
 
-class ClientCreationError(Exception):
+class CommunicationModuleException(Exception):
     """
-    Failed to create a communication module instance.
+    Generic Communication Module error.
+    """
+
+
+class CommunicationModuleCreationError(CommunicationModuleException):
+    """
+    Failed to create a Communication Module instance.
     """
 
 
@@ -28,7 +34,7 @@ class CommunicationModule:
                     'DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY value must be declared.')
 
         except (DaemonInstanceCreationError, DaemonConnectionRefusedError) as error:
-            raise ClientCreationError(
+            raise CommunicationModuleCreationError(
                 'Failed to create a communication module instance: ', error)
 
     def send_dtn_message(self, message=None):
