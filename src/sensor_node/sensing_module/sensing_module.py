@@ -3,19 +3,31 @@ import time
 from environs import Env
 
 from pms7003 import PmsSensorException
-from sensors.bmp280 import BMP280Exception
-from sensors.dht11 import DHT11Exception
-from sensors.mq import MQSensorException
+from .sensors.bmp280 import BMP280Exception
+from .sensors.dht11 import DHT11Exception
+from .sensors.mq import MQSensorException
 
-from sensors.bmp280 import BMP280
-from sensors.dht11 import DHT11
-from sensors.mq135 import MQ135
-from sensors.mq131 import MQ131
-from sensors.pms7003 import PMS7003
+from .sensors.bmp280 import BMP280
+from .sensors.dht11 import DHT11
+from .sensors.mq135 import MQ135
+from .sensors.mq131 import MQ131
+from .sensors.pms7003 import PMS7003
 
 # Load enviroment variables
 env = Env()
 env.read_env()
+
+
+class SensingModuleException(Exception):
+    """
+    Generic Sensing Module error.
+    """
+
+
+class SensingModuleCreationError(SensingModuleException):
+    """
+    Failed to create a Sensing Module instance.
+    """
 
 
 class SensingModule:
@@ -24,11 +36,16 @@ class SensingModule:
     """
 
     def __init__(self):
-        self._dht11 = DHT11()
-        self._bmp280 = BMP280()
-        self._pms7003 = PMS7003()
-        self._mq131 = MQ131()
-        self._mq135 = MQ135()
+
+        try:
+            self._dht11 = DHT11()
+            self._bmp280 = BMP280()
+            self._pms7003 = PMS7003()
+            self._mq131 = MQ131()
+            self._mq135 = MQ135()
+        except ValueError as error:
+            raise SensingModuleCreationError(
+                'Failed to create the Sensing Module: ', error)
 
     def calibrate_sensors(self):
         self._dht11.calibrate()

@@ -1,6 +1,8 @@
 Adafruit-Blinka==3.0.5
+adafruit-circuitpython-bmp280==3.1.1
 adafruit-circuitpython-busdevice==4.0.1
 adafruit-circuitpython-mcp3xxx==1.1.2
+Adafruit-DHT==1.4.0
 Adafruit-PlatformDetect==1.3.6
 Adafruit-PureIO==0.2.3
 astroid==2.3.3
@@ -11,9 +13,11 @@ isort==4.3.21
 lazy-object-proxy==1.4.3
 marshmallow==3.2.2
 mccabe==0.6.1
+pms7003==1.0.0
 pycodestyle==2.5.0
 pyflakes==2.1.1
 pylint==2.4.4
+pyserial==3.4
 python-dotenv==0.10.3
 rpi-ws281x==4.2.2
 RPi.GPIO==0.7.0
