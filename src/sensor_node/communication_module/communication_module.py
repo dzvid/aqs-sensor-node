@@ -1,6 +1,6 @@
 from environs import Env
 
-from ibrdtn_daemon import IbrdtnDaemon, DaemonInstanceCreationError, DaemonConnectionRefusedError
+from .ibrdtn_daemon import IbrdtnDaemon, DaemonInstanceCreationError, DaemonConnectionRefusedError
 
 # Load enviroment variables
 env = Env()
