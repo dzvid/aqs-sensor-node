@@ -98,7 +98,7 @@ class SensorNode:
                 print('Sensor node: FAILED to read the sensors')
 
             self._wait_interval_next_reading(
-                self._SENSOR_NODE_READING_INTERVAL)
+                reading_interval=self._SENSOR_NODE_READING_INTERVAL)
 
     def _generate_message(self, reading=None):
         """
