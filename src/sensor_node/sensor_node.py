@@ -1,7 +1,7 @@
 import time
 import json
 
-from datetime import datetime
+import datetime
 from environs import Env
 
 from sensing_module.sensing_module import SensingModule
