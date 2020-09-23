@@ -28,7 +28,8 @@ class BME280(Sensor):
     def __init__(self):
 
         self._i2c = busio.I2C(board.SCL, board.SDA)
-        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c=self._i2c)
+        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(
+            i2c=self._i2c, address=0x76)
 
         # change BME280_LOCAL_SEA_LEVEL in .env to match the location's pressure (hPa) at sea level
         # default is sea level pressure 1013.25
@@ -76,7 +77,7 @@ class BME280(Sensor):
         """The humidity as a value from 0 to 100%."""
         try:
 
-            return round(self._bme280.temperature, 3)
+            return round(self._bme280.humidity, 3)
 
         except (OSError):
             raise BME280Exception("I/O error: Problem reading BME280 sensor, communication \
