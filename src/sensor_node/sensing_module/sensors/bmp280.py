@@ -4,7 +4,7 @@ import adafruit_bmp280
 
 from environs import Env
 
-from sensor import Sensor
+from .sensor import Sensor
 
 
 # Load enviroment variables
