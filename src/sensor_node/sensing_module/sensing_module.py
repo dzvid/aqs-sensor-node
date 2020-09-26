@@ -11,7 +11,7 @@ from sensors.mq135 import MQ135
 from sensors.mq131 import MQ131
 from sensors.pms7003 import PMS7003
 
-from reading import Reading
+from .reading import Reading
 
 # Load enviroment variables
 env = Env()
