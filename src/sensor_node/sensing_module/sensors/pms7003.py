@@ -3,7 +3,7 @@ import time
 from environs import Env
 from pms7003 import Pms7003Sensor, PmsSensorException
 
-from .sensor import Sensor
+from sensor import Sensor
 
 
 # Load enviroment variables
@@ -52,9 +52,7 @@ class PMS7003(Sensor):
         """
         print(
             'Calibrating Sensor PMS7003 ({0} seconds)...'.format(self._CALIBRATION_TIME))
-
         time.sleep(self._CALIBRATION_TIME)
-
         print(
             'Calibrating Sensor PMS7003 ({0} seconds)... done!'.format(self._CALIBRATION_TIME))
 
@@ -100,7 +98,6 @@ class PMS7003(Sensor):
             raise ValueError('PMS7003: Temperature value must be informed')
 
         try:
-
             reading = dict()
 
             # Initialize the parameters measured as None (invalid)

@@ -7,8 +7,8 @@ import time
 
 from environs import Env
 
-from .sensor import Sensor
-from .adc import ADC
+from sensor import Sensor
+from adc import ADC
 
 # Load enviroment variables
 env = Env()
@@ -124,10 +124,10 @@ class MQSensor(Sensor):
 
         # RSRO_CLEAN_AIR = RS/RO in pure air
         self.RSRO_CLEAN_AIR = RSRO_CLEAN_AIR
-                                                          # obtained from datasheet using webplotdigitilizer
+        # obtained from datasheet using webplotdigitilizer
 
-                                                               # By the datasheet figure we have to select
-                                                          # the max and min gas concentration sensibility points.
+        # By the datasheet figure we have to select
+        # the max and min gas concentration sensibility points.
         # minimum concentration sensibility of gas sensor
         self.MIN_CONCENTRATION = MIN_CONCENTRATION
         # maximum concentration sensibility of gas sensor
@@ -228,8 +228,8 @@ class MQSensor(Sensor):
             rs = rs / self.CALIBRATION_SAMPLES    # Calculate the readings average
 
             ro = rs / self.RSRO_CLEAN_AIR         # Calculate RO value in clean air
-                                               # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
-                                               # RSRO_CLEAN_AIR is obtained from the datasheet
+            # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
+            # RSRO_CLEAN_AIR is obtained from the datasheet
 
             ro = round(ro, 3)
 

@@ -4,7 +4,7 @@ import Adafruit_DHT
 
 from environs import Env
 
-from .sensor import Sensor
+from sensor import Sensor
 
 # Load enviroment variables
 env = Env()

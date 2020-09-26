@@ -2,7 +2,7 @@ import time
 
 from environs import Env
 
-from .mq import MQSensor
+from mq import MQSensor
 
 # Load enviroment variables
 env = Env()

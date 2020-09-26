@@ -124,19 +124,19 @@ class SensorNode:
 
         return json.dumps(payload_message)
 
-    def _get_current_datetime(self):
-        """
-        Returns the local datetime in ISO 8601 format with timezone 
-        and no microsecond info.
-        Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
-        """
+    # def _get_current_datetime(self):
+    #     """
+    #     Returns the local datetime in ISO 8601 format with timezone
+    #     and no microsecond info.
+    #     Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
+    #     """
 
-       # Calculate the offset taking into account daylight saving time
-        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
-        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
-        collected_at = datetime.datetime.now().replace(
-            microsecond=0, tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
-        return collected_at
+    #    # Calculate the offset taking into account daylight saving time
+    #     utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+    #     utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
+    #     collected_at = datetime.datetime.now().replace(
+    #         microsecond=0, tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+    #     return collected_at
 
     def _wait_interval_next_reading(self, reading_interval=None):
         '''
