@@ -3,7 +3,7 @@ import time
 from environs import Env
 from pms7003 import Pms7003Sensor, PmsSensorException
 
-from sensor import Sensor
+from .sensor import Sensor
 
 
 # Load enviroment variables
