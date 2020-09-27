@@ -7,8 +7,8 @@ import time
 
 from environs import Env
 
-from .sensor import Sensor
-from .adc import ADC
+from sensor import Sensor
+from adc import ADC
 
 # Load enviroment variables
 env = Env()
