@@ -47,6 +47,7 @@ class MQ135(MQSensor):
 
     def calibrate_ro(self, current_humidity=None, current_temperature=None):
         """
+        Calibrate Sensor MQ-135 Ro resistance value in clean air.
         Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
         Otherwise, returns None
 

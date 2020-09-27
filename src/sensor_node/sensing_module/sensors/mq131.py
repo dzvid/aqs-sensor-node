@@ -52,8 +52,10 @@ class MQ131(MQSensor):
 
     def calibrate_ro(self, current_humidity=None, current_temperature=None):
         """
+        Calibrate Sensor MQ-131 Ro resistance value in clean air.
+
         Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
-        Otherwise, returns None
+        Otherwise, returns an error message.
 
         Assuming that the sensor is in clean air, the method gets the gas
         sensor resistance (RS) in clean air, then it divides by RSRO_CLEAN_AIR 
