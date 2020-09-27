@@ -9,7 +9,7 @@ from sensors.mq import MQSensorException
 from sensors.bme280 import BME280
 from sensors.mq135 import MQ135
 from sensors.mq131 import MQ131
-from sensors.pms7003 import PMS7003
+from sensors.pms import PMS7003
 
 from reading import Reading
 
