@@ -77,7 +77,7 @@ class SensingModule:
               # Reads DHT11 (Can take up to 30 seconds)
 
             # Reads BME280
-            relative_humidity = self._bme280.get_temperature()
+            relative_humidity = self._bme280.get_humidity()
             temperature = self._bme280.get_temperature()
             pressure = self._bme280.get_pressure()
 
