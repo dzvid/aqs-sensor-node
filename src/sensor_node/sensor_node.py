@@ -4,13 +4,13 @@ import json
 import datetime
 from environs import Env
 
-from .sensing_module.sensing_module import SensingModule
-from .communication_module.communication_module import CommunicationModule
+from sensing_module.sensing_module import SensingModule
+from communication_module.communication_module import CommunicationModule
 
-from .sensing_module.sensing_module import SensingModuleCreationError
-from .communication_module.communication_module import CommunicationModuleCreationError
+from sensing_module.sensing_module import SensingModuleCreationError
+from communication_module.communication_module import CommunicationModuleCreationError
 
-from .message import Message
+from message import Message
 
 
 # Load enviroment variables
