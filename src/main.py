@@ -8,7 +8,7 @@ if __name__ == '__main__':
     try:
         node = SensorNode()
 
-        node.begin()
+        node.start_up()
 
         node.sensing_mode()
     except SensorNodeCreationError as error:

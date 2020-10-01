@@ -26,27 +26,19 @@ class CommunicationModule:
             # Create IBRDTN daemon client
             self._dtn_client = IbrdtnDaemon()
 
-            self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY = env.bool(
-                'DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY', default=None)
-
-            if self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY is None:
-                raise DaemonInstanceCreationError(
-                    'DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY value must be declared.')
-
         except (DaemonInstanceCreationError, DaemonConnectionRefusedError) as error:
             raise CommunicationModuleCreationError(
                 'Failed to create a communication module instance: ', error)
 
     def send_dtn_message(self, message=None):
         """
-        Send a JSON string message over DTN.
+        Send a Message over DTN.
 
         Returns True, if the message was sent to the IBRDTN daemon succesfully.
-
         Otherwise, returns False.
 
         Parameters
         ----------
-            message : JSON string
+            message : A Message object
         """
-        return self._dtn_client.send_message(payload_message=message, custody=self._DTN_CLIENT_BUNDLE_DEFAULT_CUSTODY)
+        return self._dtn_client.send_message(payload=message.payload, custody=message.custody)

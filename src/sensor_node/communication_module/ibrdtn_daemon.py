@@ -134,35 +134,20 @@ class IbrdtnDaemon():
         # Close socket
         self._daemon_socket.close()
 
-    # JSON payload message validation method
-    def _is_json(self, payload):
+    def _create_bundle(self, payload=None, custody=None):
         """
-        Check if the payload message is a valid JSON string.
-        Raises a DaemonMessageValueError if the payload message is not a JSON string.
+        Returns a bundle containing the payload string.
 
         Parameters
         ----------
-            payload : expected JSON string
-                The message payload to be send.
-        """
-        try:
-            json.loads(payload)
-        except (JSONDecodeError, ValueError, TypeError) as error:
-            raise DaemonMessageValueError(
-                "Invalid payload message value,\npayload message must be a JSON string!", error)
-
-    def _create_bundle(self, payload_message=None, custody=None):
-        """
-        Returns a bundle containing the string JSON payload message.
-
-        Parameters
-        ----------
-        payload_message : JSON 
-            A payload message in JSON format that is gonna be the bundle payload.
+        payload : String 
+            The payload contains a string value, it can be anything (e.g: a JSON/XML string).
 
         custody : Boolean
-            Enables the custody processing flag. The bundle processing flags indicate
-            if a bundle requires custody or not.
+                Enables the custody processing flag. The bundle processing flags indicate
+                if a bundle requires custody or not. DEFAULT VALUE is None.
+                - Set to True, to indicate if a bundle requires custody.
+                - Set to False, to indicate if a bundle DOES NOT requires custody.
         """
         # The bundle payload is a Base64 encoded string
         bundle = "Source: %s\n" % self._DTN_SOURCE_EID
@@ -178,9 +163,9 @@ class IbrdtnDaemon():
         bundle += "Block: 1\n"
         bundle += "Flags: LAST_BLOCK\n"
         bundle += "Length: %d\n\n" % len(
-            bytes(payload_message, encoding="UTF-8"))
+            bytes(payload, encoding="UTF-8"))
         bundle += "%s\n\n" % str(base64.b64encode(
-            payload_message.encode(encoding="UTF-8")), encoding="UTF-8")
+            payload.encode(encoding="UTF-8")), encoding="UTF-8")
 
         return bundle
 
@@ -213,7 +198,7 @@ class IbrdtnDaemon():
             raise DaemonBundleUploadError(
                 "Connection problem to the DTN daemon, could not send the bundle!", error)
 
-    def send_message(self, payload_message=None, custody=None):
+    def send_message(self, payload=None, custody=None):
         """
         Create a bundle from a JSON payload message and send it through IBRDTN daemon.
 
@@ -223,37 +208,24 @@ class IbrdtnDaemon():
 
         Parameters
         ----------
-            payload_message : JSON 
-                A payload message in JSON format that is gonna be the bundle payload.
+            payload : JSON 
+                A string in JSON format that is gonna be the bundle payload.
 
-            custody : Boolean
-                Enables the custody processing flag. The bundle processing flags indicate
-                if a bundle requires custody or not. DEFAULT VALUE is False.
-                - Set to True, to indicate if a bundle requires custody.
-                - Set to False, to indicate if a bundle DOES NOT requires custody.
+
         """
         try:
-            # Check method parameters
-            if payload_message is None:
+
+            if payload is None:
                 raise DaemonMessageValueError(
-                    "Payload message value can not be None, payload message must be a JSON string.")
+                    "Payload message value can not be None, payload message must be a string.")
             if custody is None:
                 raise DaemonMessageValueError(
                     "Custody value can not be None, custody must a boolean value.")
 
-            # Check if payload is a valid json string
-            self._is_json(payload_message)
-
-            # Build the bundle containing the payload message
-            bundle = self._create_bundle(
-                payload_message=payload_message, custody=custody)
-
-            # Send the message to the IBRDTN daemon
+            bundle = self._create_bundle(payload=payload, custody=custody)
             self._send_bundle(bundle=bundle)
 
-            # Message sent succesfully!
             return True
         except (DaemonMessageValueError, DaemonBundleUploadError) as error:
             print("Failed to send dtn message: ", error)
-            # Failed to send message!
             return False

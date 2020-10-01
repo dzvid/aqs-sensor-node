@@ -3,13 +3,13 @@ import time
 from environs import Env
 
 from pms7003 import PmsSensorException
-from sensors.bme280 import BME280Exception
-from sensors.mq import MQSensorException
+from .sensors.bme280 import BME280Exception
+from .sensors.mq import MQSensorException
 
-from sensors.bme280 import BME280
-from sensors.mq135 import MQ135
-from sensors.mq131 import MQ131
-from sensors.pms import PMS7003
+from .sensors.bme280 import BME280
+from .sensors.mq135 import MQ135
+from .sensors.mq131 import MQ131
+from .sensors.pms import PMS7003
 
 from reading import Reading
 
