@@ -124,7 +124,7 @@ class SensorNode:
             'reading': reading.toJSON()
         }
 
-        return Message(payload=payload)
+        return Message(payload=json.dumps(payload))
 
     def _wait_interval_next_reading(self, reading_interval=None):
         '''
