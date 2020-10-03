@@ -41,8 +41,6 @@ class SensorNode:
             self._SENSOR_NODE_UUID = env.str('SENSOR_NODE_UUID', default=None)
             self._SENSOR_NODE_READING_INTERVAL = env.int(
                 'SENSOR_NODE_READING_INTERVAL', default=None)
-            self._SENSOR_NODE_MQTT_DATA_TOPIC = env.str(
-                'SENSOR_NODE_MQTT_DATA_TOPIC', default=None)
 
             if(self._SENSOR_NODE_UUID is None):
                 raise ValueError(
@@ -50,9 +48,6 @@ class SensorNode:
             if(self._SENSOR_NODE_READING_INTERVAL is None):
                 raise ValueError(
                     'SENSOR_NODE_READING_INTERVAL must be provided.')
-            if(self._SENSOR_NODE_MQTT_DATA_TOPIC is None):
-                raise ValueError(
-                    'SENSOR_NODE_MQTT_DATA_TOPIC must be provided.')
 
             # Create sensor node modules
             self.sensing_module = SensingModule()
