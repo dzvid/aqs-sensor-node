@@ -222,8 +222,8 @@ class IbrdtnDaemon():
                 raise DaemonMessageValueError(
                     "Custody value can not be None, custody must a boolean value.")
 
-            bundle = self._create_bundle(payload=payload, custody=custody)
-            self._send_bundle(bundle=bundle)
+            self._send_bundle(bundle=self._create_bundle(
+                payload=payload, custody=custody))
 
             return True
         except (DaemonMessageValueError, DaemonBundleUploadError) as error:

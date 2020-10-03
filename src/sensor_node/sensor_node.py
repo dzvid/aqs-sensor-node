@@ -104,7 +104,7 @@ class SensorNode:
 
     def _generate_message(self, reading=None):
         """
-        Generates a message to be sent over DTN.
+        Generates a message containing a reading to be sent over DTN.
 
         Parameters
         ----------
