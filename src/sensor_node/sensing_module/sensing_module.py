@@ -44,7 +44,8 @@ class SensingModule:
             self._mq135 = MQ135()
         except ValueError as error:
             raise SensingModuleCreationError(
-                'Failed to create the Sensing Module: ', error)
+                "Failed to create the Sensing Module: ", error
+            )
 
     def calibrate_sensors(self):
         self._bme280.calibrate()
@@ -56,25 +57,24 @@ class SensingModule:
 
     def read_sensors(self):
         """
-        Read the sensors.
-        Returns a reading, if the reading is successful.
-        Returns None, if an error occurs when reading the sensors.
+        If reading is successful, returns a Reading object.
+        Otherwise, returns None.
         """
 
         try:
             # The following comment is for when using DHT11 Sensor:
-              # humidity = None
-              # WARNING: using the loop below the reading method stays locked until
-              #  it gets a valid humity reading from DHT11
-              # Read humidity from DHT11. Sometimes DHT11 will not return a valid humidity reading.
-              # So it keeps trying to read humidity value until it gets a valid reading.
-              # Takes a 2 second interval between readings following datasheet recomendations.
+            # humidity = None
+            # WARNING: using the loop below the reading method stays locked until
+            #  it gets a valid humity reading from DHT11
+            # Read humidity from DHT11. Sometimes DHT11 will not return a valid humidity reading.
+            # So it keeps trying to read humidity value until it gets a valid reading.
+            # Takes a 2 second interval between readings following datasheet recomendations.
 
-              # while humidity == None:
-              #     humidity = self._dht11.get_humidity()
-              #     time.sleep(2)
+            # while humidity == None:
+            #     humidity = self._dht11.get_humidity()
+            #     time.sleep(2)
 
-              # Reads DHT11 (Can take up to 30 seconds)
+            # Reads DHT11 (Can take up to 30 seconds)
 
             # Reads BME280
             relative_humidity = self._bme280.get_humidity()
@@ -83,25 +83,39 @@ class SensingModule:
 
             # Reads MQ135
             carbon_monoxide = self._mq135.get_carbon_monoxide(
-                current_humidity=relative_humidity, current_temperature=temperature)
+                current_humidity=relative_humidity,
+                current_temperature=temperature,
+            )
 
             # Reads MQ131
             ozone = self._mq131.get_ozone(
-                current_humidity=relative_humidity, current_temperature=temperature)
+                current_humidity=relative_humidity,
+                current_temperature=temperature,
+            )
 
             # Reads PMS7003
             particulate_matter = self._pms7003.get_particulate_matter(
-                current_humidity=relative_humidity, current_temperature=temperature)
+                current_humidity=relative_humidity,
+                current_temperature=temperature,
+            )
 
-            return Reading(carbon_monoxide=carbon_monoxide,
-                           pm2_5=particulate_matter['pm2_5'],
-                           pm10=particulate_matter['pm10'],
-                           ozone=ozone,
-                           temperature=temperature,
-                           relative_humidity=relative_humidity,
-                           pressure=pressure)
+            return Reading(
+                carbon_monoxide=carbon_monoxide,
+                pm2_5=particulate_matter["pm2_5"],
+                pm10=particulate_matter["pm10"],
+                ozone=ozone,
+                temperature=temperature,
+                relative_humidity=relative_humidity,
+                pressure=pressure,
+            )
 
-        except (BME280Exception, MQSensorException, PmsSensorException, ValueError, RuntimeError) as e:
+        except (
+            BME280Exception,
+            MQSensorException,
+            PmsSensorException,
+            ValueError,
+            RuntimeError,
+        ) as e:
             print("Failed to get sensors reading, try again...\n", e)
             return None
 

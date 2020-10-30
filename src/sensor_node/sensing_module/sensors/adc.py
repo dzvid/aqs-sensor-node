@@ -29,27 +29,28 @@ class ADC:
         self._channel = None
 
         # Create an analog input channel on the MCP3008 according to pin_adc value
-        if(pin_adc is None):
-            raise ValueError('pin_adc needs to be informed.')
-        elif(pin_adc == 0):
+        if pin_adc is None:
+            raise ValueError("pin_adc needs to be informed.")
+        elif pin_adc == 0:
             self._channel = AnalogIn(type(self)._mcp, MCP.P0)
-        elif (pin_adc == 1):
+        elif pin_adc == 1:
             self._channel = AnalogIn(type(self)._mcp, MCP.P1)
-        elif (pin_adc == 2):
+        elif pin_adc == 2:
             self._channel = AnalogIn(type(self)._mcp, MCP.P2)
-        elif (pin_adc == 3):
+        elif pin_adc == 3:
             self._channel = AnalogIn(type(self)._mcp, MCP.P3)
-        elif (pin_adc == 4):
+        elif pin_adc == 4:
             self._channel = AnalogIn(type(self)._mcp, MCP.P4)
-        elif (pin_adc == 5):
+        elif pin_adc == 5:
             self._channel = AnalogIn(type(self)._mcp, MCP.P5)
-        elif (pin_adc == 1):
+        elif pin_adc == 6:
             self._channel = AnalogIn(type(self)._mcp, MCP.P6)
-        elif (pin_adc == 1):
+        elif pin_adc == 7:
             self._channel = AnalogIn(type(self)._mcp, MCP.P7)
         else:
             raise ValueError(
-                "Invalid pin value. Pin value must be an integer value between 0 and 7")
+                "Invalid pin value. Pin value must be an integer value between 0 and 7"
+            )
 
     def read_raw_value(self):
         """Returns the adc raw value for the pin informed as an integer."""

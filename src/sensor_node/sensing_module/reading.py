@@ -3,12 +3,21 @@ import datetime
 import json
 
 
-class Reading():
+class Reading:
     """
     Class that represents a reading collected by the Sensing Module.
     """
 
-    def __init__(self, carbon_monoxide, pm2_5, pm10, ozone, temperature, relative_humidity, pressure):
+    def __init__(
+        self,
+        carbon_monoxide,
+        pm2_5,
+        pm10,
+        ozone,
+        temperature,
+        relative_humidity,
+        pressure,
+    ):
         self.carbon_monoxide = carbon_monoxide
         self.pm2_5 = pm2_5
         self.pm10 = pm10
@@ -20,15 +29,20 @@ class Reading():
 
     def _register_collected_at_date(self):
         """
-        Returns the local datetime in ISO 8601 format with timezone 
+        Returns the local datetime in ISO 8601 format with timezone.
         and no microsecond info. Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
         """
 
         # Calculate the offset taking into account daylight saving time
-        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+        utc_offset_sec = (
+            time.altzone if time.localtime().tm_isdst else time.timezone
+        )
         utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
-        collected_at = datetime.datetime.now().replace(
-            microsecond=0, tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+        collected_at = (
+            datetime.datetime.now()
+            .replace(microsecond=0, tzinfo=datetime.timezone(offset=utc_offset))
+            .isoformat()
+        )
         return collected_at
 
     def toJSON(self):

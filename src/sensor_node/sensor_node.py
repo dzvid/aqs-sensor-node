@@ -8,7 +8,10 @@ from sensing_module.sensing_module import SensingModule
 from communication_module.communication_module import CommunicationModule
 
 from sensing_module.sensing_module import SensingModuleCreationError
-from communication_module.communication_module import CommunicationModuleCreationError
+from communication_module.communication_module import (
+    CommunicationModuleCreationError,
+    CommunicationModuleException,
+)
 
 from message import Message
 
@@ -38,64 +41,56 @@ class SensorNode:
     def __init__(self):
         try:
             # Load sensor node parameters
-            self._SENSOR_NODE_UUID = env.str('SENSOR_NODE_UUID', default=None)
-            self._SENSOR_NODE_READING_INTERVAL = env.int(
-                'SENSOR_NODE_READING_INTERVAL', default=None)
+            self._uuid = env.str("SENSOR_NODE_UUID", default=None)
+            self._reading_interval = env.int(
+                "SENSOR_NODE_READING_INTERVAL", default=None
+            )
 
-            if(self._SENSOR_NODE_UUID is None):
+            if self._uuid is None:
+                raise ValueError("SENSOR_NODE_UUID value must be provided.")
+            if self._reading_interval is None:
                 raise ValueError(
-                    'SENSOR_NODE_UUID value must be provided.')
-            if(self._SENSOR_NODE_READING_INTERVAL is None):
-                raise ValueError(
-                    'SENSOR_NODE_READING_INTERVAL must be provided.')
+                    "SENSOR_NODE_READING_INTERVAL must be provided."
+                )
 
             # Create sensor node modules
             self.sensing_module = SensingModule()
             self.communication_module = CommunicationModule()
 
-        except (ValueError, CommunicationModuleCreationError, SensingModuleCreationError) as error:
+        except (
+            ValueError,
+            CommunicationModuleCreationError,
+            SensingModuleCreationError,
+        ) as error:
             raise SensorNodeCreationError(
-                'Failed to create a sensor node instance: ', error)
+                "Failed to create a sensor node instance.\n", error
+            )
 
-    def start_up(self):
+    def startup(self):
         """
         Sensor node initialization.
         """
-        print('Initializating sensor node....')
+        print("Initializating sensor node....")
 
         self.sensing_module.calibrate_sensors()
 
-        print('Initializating sensor node....done!')
+        print("Initializating sensor node....done!")
 
     def sensing_mode(self):
         """
-        Get sensors readings from sensing module and send them to communication module.
+        Get sensors readings from sensing module and send them to communicatio
+        module.
         """
         print("Sensor node in sensing mode!")
 
         while True:
-            # Set initial reading value
-            current_reading = None
-
             current_reading = self.sensing_module.read_sensors()
 
             if current_reading is not None:
+                message = self._generate_message(reading=current_reading)
+                self.communication_module.send_message(message=message)
 
-                message = self._generate_message(
-                    reading=current_reading)
-
-                reading_sent = self.communication_module.send_dtn_message(
-                    message=message)
-
-                if(reading_sent):
-                    print('Sensor node: Message sent SUCCESSFULLY to the DTN daemon!')
-                else:
-                    print('Sensor node: Message FAILED to be sent to the DTN daemon!')
-            else:
-                print('Sensor node: FAILED to get a reading from sensing module!')
-
-            self._wait_interval_next_reading(
-                reading_interval=self._SENSOR_NODE_READING_INTERVAL)
+            self._wait_time_interval_next_reading()
 
     def _generate_message(self, reading=None):
         """
@@ -115,15 +110,15 @@ class SensorNode:
         Custody: no custody transference is used. 
         """
         payload = {
-            'sensor_node': self._SENSOR_NODE_UUID,
-            'reading': reading.toJSON()
+            "sensor_node": self._uuid,
+            "reading": reading.toJSON(),
         }
 
         return Message(payload=json.dumps(payload))
 
-    def _wait_interval_next_reading(self, reading_interval=None):
-        '''
-        Delay execution for a fixed time interval before take a new sensor node reading.
-        Args: reading_interval Time interval in seconds to wait until next reading.
-        '''
-        time.sleep(reading_interval)
+    def _wait_time_interval_next_reading(self):
+        """
+        Delay execution for a fixed time interval before take a new sensor node
+        reading.
+        """
+        time.sleep(self._reading_interval)

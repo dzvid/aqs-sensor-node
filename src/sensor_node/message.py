@@ -3,9 +3,10 @@ import json
 
 class Message:
     """
-    A class that represents a message sent over DTN. A message has two attributes
+    A class that represents a message sent over DTN.
+    A message has two attributes:
       payload: A JSON string to be sent over the network;
-      custody: A boolean flag indicating if DTN custody will be used. 
+      custody: A boolean flag indicating if DTN custody will be used.
         By default, custody is False. Set to True to enable it for a message.
     """
 
@@ -31,7 +32,7 @@ class Message:
 
     @payload.setter
     def payload(self, value):
-        if not self._is_json(str_json=value):
+        if not self._is_json(str_json=value) or value is None:
             raise ValueError("Payload must be a JSON string")
         self._payload = value
 
