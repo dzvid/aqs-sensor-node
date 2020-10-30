@@ -4,16 +4,16 @@ import json
 import datetime
 from environs import Env
 
-from sensing_module.sensing_module import SensingModule
-from communication_module.communication_module import CommunicationModule
 
-from sensing_module.sensing_module import SensingModuleCreationError
-from communication_module.communication_module import (
-    CommunicationModuleCreationError,
-    CommunicationModuleException,
+from .sensing_module.sensing_module import (
+    SensingModule,
+    SensingModuleCreationError,
 )
-
-from message import Message
+from .communication_module.communication_module import (
+    CommunicationModule,
+    CommunicationModuleCreationError,
+)
+from .message import Message
 
 
 # Load enviroment variables
