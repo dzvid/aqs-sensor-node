@@ -29,11 +29,15 @@ class BME280(Sensor):
     def __init__(self):
 
         self._i2c = busio.I2C(board.SCL, board.SDA)
-        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c=self._i2c, address=0x76)
+        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(
+            i2c=self._i2c, address=0x76
+        )
 
         # change BME280_LOCAL_SEA_LEVEL in .env to match the location's pressure (hPa) at sea level
         # default is sea level pressure 1013.25
-        self._local_sea_level = env.float("BME280_LOCAL_SEA_LEVEL", default=None)
+        self._local_sea_level = env.float(
+            "BME280_LOCAL_SEA_LEVEL", default=None
+        )
 
         # Set location's pressure (hPa) at sea level
         if self._local_sea_level is not None:

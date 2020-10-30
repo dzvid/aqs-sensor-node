@@ -18,17 +18,27 @@ class PMS7003(Sensor):
 
     def __init__(self):
         # Get PMS7003 parameters from environment configs (.env)
-        self._CALIBRATION_TIME = env.int("PMS7003_CALIBRATION_TIME", default=None)
-        self._UART_SERIAL_ADDRESS = env.str("PMS7003_UART_SERIAL_ADDRESS", default=None)
+        self._CALIBRATION_TIME = env.int(
+            "PMS7003_CALIBRATION_TIME", default=None
+        )
+        self._UART_SERIAL_ADDRESS = env.str(
+            "PMS7003_UART_SERIAL_ADDRESS", default=None
+        )
         self._MIN_HUMIDITY = env.float("PMS7003_MIN_HUMIDITY", default=None)
         self._MAX_HUMIDITY = env.float("PMS7003_MAX_HUMIDITY", default=None)
-        self._MIN_TEMPERATURE = env.float("PMS7003_MIN_TEMPERATURE", default=None)
-        self._MAX_TEMPERATURE = env.float("PMS7003_MAX_TEMPERATURE", default=None)
+        self._MIN_TEMPERATURE = env.float(
+            "PMS7003_MIN_TEMPERATURE", default=None
+        )
+        self._MAX_TEMPERATURE = env.float(
+            "PMS7003_MAX_TEMPERATURE", default=None
+        )
 
         if self._CALIBRATION_TIME is None:
             raise ValueError("PMS7003_CALIBRATION_TIME value must be declared")
         if self._UART_SERIAL_ADDRESS is None:
-            raise ValueError("PMS7003_UART_SERIAL_ADDRESS value must be declared")
+            raise ValueError(
+                "PMS7003_UART_SERIAL_ADDRESS value must be declared"
+            )
         if self._MIN_HUMIDITY is None:
             raise ValueError("PMS7003_MIN_HUMIDITY value must be declared")
         if self._MAX_HUMIDITY is None:
@@ -46,7 +56,9 @@ class PMS7003(Sensor):
         The PMS7003 sensor needs 30 seconds initialization before returning stable data.
         """
         print(
-            "Calibrating Sensor PMS7003 ({0} seconds)...".format(self._CALIBRATION_TIME)
+            "Calibrating Sensor PMS7003 ({0} seconds)...".format(
+                self._CALIBRATION_TIME
+            )
         )
         time.sleep(self._CALIBRATION_TIME)
         print(
@@ -91,7 +103,9 @@ class PMS7003(Sensor):
             return True
         return False
 
-    def get_particulate_matter(self, current_humidity=None, current_temperature=None):
+    def get_particulate_matter(
+        self, current_humidity=None, current_temperature=None
+    ):
         """
         Returns a dict containing the particulate matter values measured by the PMS7003.
         The value for PM 2.5 has the 'pm2_5' alias and PM 10 has the 'pm10' alias.
@@ -107,27 +121,18 @@ class PMS7003(Sensor):
             raise ValueError("PMS7003: Temperature value must be informed")
 
         try:
-            reading = dict()
-
-            # Initialize the parameters measured as None (invalid)
-            reading["pm2_5"] = None
-            reading["pm10"] = None
-
             # Check if environment working conditions is not good
-            if not self._check_working_conditions(
+            if self._check_working_conditions(
                 current_humidity=current_humidity,
                 current_temperature=current_temperature,
             ):
-                return reading
-
-            # If environment is ok, try get sensor reading
-            reading = self._pms_sensor.read()
-
-            return reading
+                return self._pms_sensor.read()
+            else:
+                return None
 
         except PmsSensorException:
             raise PmsSensorException(
-                "Problem reading PMs7003 sensor, communication error that is \
+                "Problem reading PMS7003 sensor, communication error that is \
                 unlikely to re-occur(e.g. serial connection glitch). \
                 Prevents from returning corrupt measurements."
             )

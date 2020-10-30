@@ -24,8 +24,12 @@ class MQ131(MQSensor):
         self._A_EXPO = env.float("MQ131_A_EXPO", default=None)
         self._M_EXPO = env.float("MQ131_M_EXPO", default=None)
         self._RSRO_CLEAN_AIR = env.float("MQ131_RSRO_CLEAN_AIR", default=None)
-        self._MIN_CONCENTRATION = env.float("MQ131_MIN_CONCENTRATION", default=None)
-        self._MAX_CONCENTRATION = env.float("MQ131_MAX_CONCENTRATION", default=None)
+        self._MIN_CONCENTRATION = env.float(
+            "MQ131_MIN_CONCENTRATION", default=None
+        )
+        self._MAX_CONCENTRATION = env.float(
+            "MQ131_MAX_CONCENTRATION", default=None
+        )
         self._MIN_HUMIDITY = env.float("MQ131_MIN_HUMIDITY", default=None)
         self._MAX_HUMIDITY = env.float("MQ131_MAX_HUMIDITY", default=None)
         self._MIN_TEMPERATURE = env.float("MQ131_MIN_TEMPERATURE", default=None)
@@ -77,7 +81,8 @@ class MQ131(MQSensor):
           Temperature in degrees Celsius.
         """
         return super().calibrate_ro(
-            current_humidity=current_humidity, current_temperature=current_temperature
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
         )
 
     def get_ozone(self, current_humidity=None, current_temperature=None):
@@ -121,7 +126,8 @@ class MQ131(MQSensor):
         # Reads ozone value in ppb
         # The MQ sensor regression function for ozone returns the ppb value measured
         ozone_ppb = super().get_reading(
-            current_humidity=current_humidity, current_temperature=current_temperature
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
         )
 
         if ozone_ppb is not None:

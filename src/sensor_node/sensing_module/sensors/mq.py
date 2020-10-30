@@ -23,8 +23,6 @@ class MQSensorException(Exception):
     protoboard.
     """
 
-    pass
-
 
 class MQSensor(Sensor):
     """
@@ -216,7 +214,7 @@ class MQSensor(Sensor):
             raise MQSensorException(
                 "ZeroDivisionError: Failed to read MQ sensor, VPIN returned 0V, check wiring!"
             )
-        except MQSensorException:
+        except Exception:
             raise MQSensorException(
                 "Failed to read MQ sensor. Check wiring and parameter values!"
             )
@@ -236,10 +234,13 @@ class MQSensor(Sensor):
         if current_temperature is None:
             raise ValueError("Temperature value must be informed")
 
-        print("Calibrating  Sensor {0} Ro value in clean air...".format(self.NAME))
+        print(
+            "Calibrating  Sensor {0} Ro value in clean air...".format(self.NAME)
+        )
         # Check if MQ sensor is in valid environment working conditions
         if self._check_working_conditions(
-            current_humidity=current_humidity, current_temperature=current_temperature
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
         ):
 
             rs = 0.0
@@ -399,17 +400,14 @@ class MQSensor(Sensor):
         if current_temperature is None:
             raise ValueError("Temperature value must be informed")
 
-        # Check if MQ sensor is not in valid environment working conditions
-        if not self._check_working_conditions(
-            current_humidity=current_humidity, current_temperature=current_temperature
-        ):
-            return None
-
-        # Get current gas value measured by the sensor
         gas_concentration = self._measure_current_gas_concentration()
 
-        # Check if the gas concentration measured is in the sensibility range of the sensor.
-        if self._check_sensor_sensibility_range(gas_concentration=gas_concentration):
+        if self._check_working_conditions(
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
+        ) and self._check_sensor_sensibility_range(
+            gas_concentration=gas_concentration
+        ):
             return gas_concentration
         else:
             return None
