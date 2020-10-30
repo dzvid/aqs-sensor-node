@@ -153,10 +153,7 @@ class IbrdtnDaemon:
             self._daemon_stream.readline()
             # Set endpoint identifier
             self._daemon_socket.send(
-                bytes(
-                    "set endpoint %s\n" % self._dtn_app_source,
-                    encoding="UTF-8",
-                )
+                bytes("set endpoint %s\n" % self._app_source, encoding="UTF-8",)
             )
             # Read protocol set EID response
             self._daemon_stream.readline()
