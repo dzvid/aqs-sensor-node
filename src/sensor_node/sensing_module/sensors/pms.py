@@ -121,14 +121,19 @@ class PMS7003(Sensor):
             raise ValueError("PMS7003: Temperature value must be informed")
 
         try:
-            # Check if environment working conditions is not good
+            reading = dict()
+
+            # Initialize the parameters measured as None (invalid)
+            reading["pm2_5"] = None
+            reading["pm10"] = None
+
             if self._check_working_conditions(
                 current_humidity=current_humidity,
                 current_temperature=current_temperature,
             ):
                 return self._pms_sensor.read()
             else:
-                return None
+                return reading
 
         except PmsSensorException:
             raise PmsSensorException(
