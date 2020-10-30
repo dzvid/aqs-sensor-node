@@ -5,6 +5,8 @@ from sensor_node.sensor_node import SensorNode, SensorNodeCreationError
 # Script to start the sensor node
 if __name__ == "__main__":
 
+    node = None
+
     try:
         node = SensorNode()
 
@@ -16,4 +18,4 @@ if __name__ == "__main__":
     except Exception as error:
         print("Exception: {0}".format(error))
     finally:
-        SensorNode.communication_module.close_connections()
+        node.communication_module.close_connections()
