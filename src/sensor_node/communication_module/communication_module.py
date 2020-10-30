@@ -2,7 +2,6 @@ from environs import Env
 
 from .ibrdtn_daemon import (
     IbrdtnDaemon,
-    DaemonInstanceCreationError,
     DaemonConnectionError,
 )
 
