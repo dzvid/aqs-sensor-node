@@ -231,7 +231,7 @@ class IbrdtnDaemon:
         """
         # The bundle payload is a Base64 encoded string
         bundle = "Source: %s\n" % self._dtn_source_eid
-        bundle += "Destination: %s\n" % self._dtn_destination_eid
+        bundle += "Destination: %s\n" % self._destination_eid
 
         # Set bundle custody processing flag
         if custody is True:
