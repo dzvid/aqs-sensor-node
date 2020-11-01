@@ -45,9 +45,10 @@ class Reading:
         )
         return collected_at
 
-    def toJSON(self):
+    def to_dict(self):
         """
-        Returns reading in JSON format.
+        Returns reading in a dict.
+        PS: You could also use __dict__ instead
         """
         reading = {
             "carbon_monoxide": self.carbon_monoxide,
@@ -60,4 +61,4 @@ class Reading:
             "collected_at": self.collected_at,
         }
 
-        return json.dumps(reading)
+        return reading

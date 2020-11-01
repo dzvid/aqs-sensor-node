@@ -107,11 +107,11 @@ class SensorNode:
         Payload has a JSON with two keys:
           sensor_node : sensor node uuid;
           reading : contains a reading collected from sensors.
-        Custody: no custody transference is used. 
+        Custody: no custody transference is used.
         """
         payload = {
             "sensor_node": {"uuid": self._uuid},
-            "reading": reading.toJSON(),
+            "reading": reading.to_dict(),
         }
 
         return Message(payload=json.dumps(payload))
