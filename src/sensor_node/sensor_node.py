@@ -110,7 +110,7 @@ class SensorNode:
         Custody: no custody transference is used. 
         """
         payload = {
-            "sensor_node": self._uuid,
+            "sensor_node": {"uuid": self._uuid},
             "reading": reading.toJSON(),
         }
 
