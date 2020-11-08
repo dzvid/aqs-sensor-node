@@ -117,7 +117,7 @@ class SensorNode:
 
         return Message(
             payload=json.dumps(payload),
-            custody=env.str("MESSAGE_CUSTODY", default=None),
+            custody=env.bool("MESSAGE_CUSTODY", default=None),
             lifetime=env.int("MESSAGE_LIFETIME", default=None),
         )
 
