@@ -109,12 +109,17 @@ class SensorNode:
           reading : contains a reading collected from sensors.
         Custody: no custody transference is used.
         """
+
         payload = {
             "sensor_node": {"uuid": self._uuid},
             "reading": reading.to_dict(),
         }
 
-        return Message(payload=json.dumps(payload))
+        return Message(
+            payload=json.dumps(payload),
+            custody=env.str("MESSAGE_CUSTODY", default=None),
+            lifetime=env.int("MESSAGE_LIFETIME", default=None),
+        )
 
     def _wait_time_interval_next_reading(self):
         """

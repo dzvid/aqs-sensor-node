@@ -181,7 +181,7 @@ class IbrdtnDaemon:
         if self._daemon_socket:
             self._daemon_socket.close()
 
-    def send_message(self, payload=None, custody=None):
+    def send_message(self, payload=None, custody=None, lifetime=None):
         """
         Create a bundle from a JSON payload message
         and send it through IBRDTN daemon.
@@ -192,20 +192,28 @@ class IbrdtnDaemon:
                 A JSON string that is gonna be bundle payload.
             custody : boolean
                 Indicates if bundle custody is necessary.
+            lifetime : int
+                Message lifetime (in practice its bundle lifetime).
 
         Raises
         ------
         DaemonConnectionError
             Invalid value passed as parameter.
+        ValueError
+            Invalid arguments received passed.
         """
         try:
             if payload is None:
                 raise ValueError("Payload must be a string.")
             if custody is None:
                 raise ValueError("Custody must be a boolean.")
+            if lifetime is None:
+                raise ValueError("Lifetime must be an integer.")
 
             self._send_bundle(
-                bundle=self._create_bundle(payload=payload, custody=custody)
+                bundle=self._create_bundle(
+                    payload=payload, custody=custody, lifetime=lifetime
+                )
             )
             print("Sensor node: Message sent SUCCESSFULLY to the DTN daemon!")
         except ValueError as error:
@@ -213,7 +221,7 @@ class IbrdtnDaemon:
         except DaemonConnectionError as error:
             raise DaemonConnectionError("Failed to send dtn message. \n", error)
 
-    def _create_bundle(self, payload=None, custody=None):
+    def _create_bundle(self, payload=None, custody=None, lifetime=None):
         """
         Returns a bundle containing the payload string.
 
@@ -228,21 +236,25 @@ class IbrdtnDaemon:
             DEFAULT VALUE is None.
             - Set to True, to indicate if a bundle requires custody.
             - Set to False, to indicate if a bundle DOES NOT requires custody.
+
+        lifetime : int
+            Bundle lifetime.
         """
         # The bundle payload is a Base64 encoded string
         bundle = "Source: %s\n" % self._dtn_source_eid
         bundle += "Destination: %s\n" % self._destination_eid
-
         # Set bundle custody processing flag
         if custody is True:
             bundle += "Processing flags: 156\n"
         else:
             bundle += "Processing flags: 148\n"
-
+        bundle += "Lifetime: %d\n" % lifetime
         bundle += "Blocks: 1\n\n"
+
         bundle += "Block: 1\n"
         bundle += "Flags: LAST_BLOCK\n"
         bundle += "Length: %d\n\n" % len(bytes(payload, encoding="UTF-8"))
+
         bundle += "%s\n\n" % str(
             base64.b64encode(payload.encode(encoding="UTF-8")),
             encoding="UTF-8",

@@ -5,7 +5,6 @@ from .ibrdtn_daemon import (
     DaemonConnectionError,
 )
 
-# Load enviroment variables
 env = Env()
 env.read_env()
 
@@ -25,6 +24,7 @@ class CommunicationModuleCreationError(CommunicationModuleException):
 class CommunicationModule:
     def __init__(self):
         try:
+
             self._address = env.str("DTN_DAEMON_ADDRESS", default=None)
             self._port = env.int("DTN_DAEMON_PORT", default=None)
             self._app_source = env.str("DTN_SENSOR_APP_SOURCE", default=None)
@@ -61,7 +61,9 @@ class CommunicationModule:
         while not sent:
             try:
                 self._dtn_client.send_message(
-                    payload=message.payload, custody=message.custody
+                    payload=message.payload,
+                    custody=message.custody,
+                    lifetime=message.lifetime,
                 )
                 sent = True
             except DaemonConnectionError:
