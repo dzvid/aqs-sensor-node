@@ -1,12 +1,9 @@
 # comments about connecting to the daemon API: https://mail.ibr.cs.tu-bs.de/pipermail/ibr-dtn/2014-January/000538.html
 import socket
-import errno
 import base64
-import json
 
-from struct import pack, unpack
+from time import sleep
 from environs import Env
-from json import JSONDecodeError
 
 
 # Load enviroment variables
@@ -20,85 +17,133 @@ class IbrdtnDaemonException(Exception):
     """
 
 
-class DaemonInstanceCreationError(ValueError):
-    """
-    Failed to load parameters from enviroment variable (.env file).
-    """
+# class DaemonInstanceCreationError(ValueError):
+#     """
+#     Failed to load parameters from enviroment variable (.env file).
+#     """
 
 
-class DaemonConnectionRefusedError(IbrdtnDaemonException):
+class DaemonConnectionError(ConnectionError):
     """
-    Unable to connect to the IBRDTN daemon API. Is the program running?
-    """
-
-
-class DaemonBundleUploadError(IbrdtnDaemonException):
-    """
-    Unable to send bundles to the DTN Daemon. Check if the file descriptor
-    and socket are not closed or disconnected from the daemon.
+    Connection problem when interacting with IBRDTN daemon API.
     """
 
 
-class DaemonMessageValueError(ValueError):
-    """
-    Invalid payload message value or invalid custody value. 
-    Payload must be a JSON string. Custody must be a boolean value.
-    """
+# class DaemonBundleUploadError(IbrdtnDaemonException):
+#     """
+#     Unable to send bundles to the DTN Daemon. Check if the file descriptor
+#     and socket are not closed or disconnected from the daemon.
+#     """
 
 
-class IbrdtnDaemon():
+# class DaemonMessageValueError(ValueError):
+#     """
+#     Invalid payload message value or invalid custody value.
+#     Payload must be a JSON string. Custody must be a boolean value.
+#     """
+
+
+class IbrdtnDaemon:
     """
     Class to interface the communication with the IBRDTN daemon API.
+
+    Attributes
+    ----------
+    address : String
+        IBRDTN daemon address.
+
+    port : int
+        IBRDTN daemon port.
+
+    app_source : String
+        Application message source, which will be concatenated with the DTN
+        Endpoint identifier of the node running this code.
+    
+    destination_eid : String
+        DTN Endpoint identifier of the destination application running on
+        destination node.
+
+    Raises
+    ------
+    DaemonInstanceCreationError :
+        An environment variable was not declared.
+
     """
 
-    def __init__(self):
-        # Address and port of the DTN daemon
-        self._DTN_DAEMON_ADDRESS = env.str(
-            "DTN_DAEMON_ADDRESS", default=None)
-        self._DTN_DAEMON_PORT = env.int("DTN_DAEMON_PORT", default=None)
+    def __init__(
+        self, address=None, port=None, app_source=None, destination_eid=None
+    ):
+        if address is None:
+            raise ValueError("Daemon address must be informed.")
+        if port is None:
+            raise ValueError("Daemon port must be informed.")
+        if app_source is None:
+            raise ValueError("DTN app source must be informed.")
+        if destination_eid is None:
+            raise ValueError("DTN destination eid must be informed.")
 
-        # Application message source, which will be concatenated with the DTN Endpoint identifier of the node
-        # where this script actually runs
-        self._DTN_APP_SOURCE = env.str(
-            "DTN_SENSOR_APP_SOURCE", default=None)
-
-        # DTN Endpoint identifier of the destination application running on the node where the MQTT broker actually runs
-        self._DTN_DESTINATION_EID = env.str(
-            "DTN_DESTINATION_EID", default=None)
-
-        # Full DTN Endpoint identifier of this application(sensor eid + app source)
-        # (the value is set below in _create_socket_and_stream method)
-        self._DTN_SOURCE_EID = None
-
-        if(self._DTN_DAEMON_ADDRESS is None):
-            raise DaemonInstanceCreationError(
-                "Failed to create an instance. DTN_DAEMON_ADDRESS must be informed.")
-        if(self._DTN_DAEMON_PORT is None):
-            raise DaemonInstanceCreationError(
-                "Failed to create an instance. DTN_DAEMON_PORT must be informed.")
-        if(self._DTN_APP_SOURCE is None):
-            raise DaemonInstanceCreationError(
-                "Failed to create an instance. DTN_APP_SOURCE must be informed.")
-        if(self._DTN_DESTINATION_EID is None):
-            raise DaemonInstanceCreationError(
-                "Failed to create an instance. DTN_DESTINATION_EID must be informed.")
-
+        self._daemon_address = address
+        self._daemon_port = port
+        self._app_source = app_source
+        self._destination_eid = destination_eid
         # Now we create a listening endpoint from which we can send bundles
-        self._daemon_socket = None  # Socket is created in _create_socket_and_stream()
-        self._daemon_stream = None  # Stream is created in _create_socket_and_stream()
-        self._create_socket_and_stream()
+        #  _dtn_source_eid: Full DTN Endpoint identifier of this application
+        # (sensor eid + app source)
+        # (the value is set below in _connect_to_daemon method)
+        self._daemon_socket = None
+        self._daemon_stream = None
+        self._dtn_source_eid = None
 
-    def _create_socket_and_stream(self):
+    def create_connection(self):
         """
-        Creates the socket and stream (file object aka file descriptor) to communicate with the DTN daemon.
+          Attempts to create connection to IBRDTN daemon 20 times, taking 30 seconds
+          interval between each try.
+          If connection is unsuccessful, throws a DaemonConnectionError exception.
+          """
+        self._daemon_socket = None
+        self._daemon_stream = None
+        self._dtn_source_eid = None
+
+        connected = False
+        current_try = 0
+        max_tries = 20
+
+        while not connected and current_try < max_tries:
+            try:
+                print(
+                    "IBRDTNDaemon: Trying to connect to daemon, try n° {0}".format(
+                        current_try + 1
+                    )
+                )
+                self._connect_to_daemon()
+                connected = True
+            except ConnectionError:
+                current_try += 1
+                sleep(30)
+
+        if not connected and current_try == max_tries:
+            raise DaemonConnectionError(
+                "Failed to create_connection to IBRDTN after {0} tries. Please, check IBRDTN daemon.".format(
+                    max_tries
+                )
+            )
+
+    def _connect_to_daemon(self):
+        """
+        Creates a socket and a stream (file object aka file descriptor)
+        to communicate with DTN daemon. Sets the daemon in protocol extended
+        mode and the endpoint app source, then gets the full DTN Endpoint
+        identifier of this application.
         """
         try:
-            # Create the socket to communicate with the DTN daemon
+            # Create socket to communicate with the DTN daemon
             self._daemon_socket = socket.socket()
             # Connect to the DTN daemon
             self._daemon_socket.connect(
-                (self._DTN_DAEMON_ADDRESS, self._DTN_DAEMON_PORT))
-            # Get a file object (file descriptor/stream) associated with the daemon"s socket
+                (self._daemon_address, self._daemon_port)
+            )
+            # Get a file object (file descriptor/stream) associated with the
+            # daemon's socket
             self._daemon_stream = self._daemon_socket.makefile()
             # Read daemon"s header response
             self._daemon_stream.readline()
@@ -107,80 +152,113 @@ class IbrdtnDaemon():
             # Read protocol switch response
             self._daemon_stream.readline()
             # Set endpoint identifier
-            self._daemon_socket.send(bytes("set endpoint %s\n" %
-                                           self._DTN_APP_SOURCE, encoding="UTF-8"))
+            self._daemon_socket.send(
+                bytes("set endpoint %s\n" % self._app_source, encoding="UTF-8",)
+            )
             # Read protocol set EID response
             self._daemon_stream.readline()
-            # Read the full DTN Endpoint identifier of this application
             self._daemon_socket.send(b"registration list\n")
             # Read the header of registration list response
             self._daemon_stream.readline()
             # Read the full DTN Endpoint identifier of this application
-            self._DTN_SOURCE_EID = self._daemon_stream.readline().rstrip()
+            self._dtn_source_eid = self._daemon_stream.readline().rstrip()
             # Read the last empty line of the response
             self._daemon_stream.readline()
-        except ConnectionRefusedError as error:
-            raise DaemonConnectionRefusedError(
-                "Failed to create an instance.\n \
-                Error while trying to socket to the IBRDTN daemon.\n \
-                Is IBRDTN daemon running?", error)
+        except ConnectionError as error:
+            raise ConnectionError(
+                "Failed to create a socket and stream to the IBRDTN daemon.\n",
+                error,
+            )
 
-    def close_socket_and_stream(self):
+    def close_connection(self):
         """
-        Closes the stream (file descriptor) and the socket open to interface to the IBTDTN daemon API.
+        Closes stream (file descriptor) and socket to IBTDTN daemon API.
         """
-        # Close stream
-        self._daemon_stream.close()
-        # Close socket
-        self._daemon_socket.close()
+        self._dtn_source_eid = None
+        if self._daemon_stream:
+            self._daemon_stream.close()
 
-    # JSON payload message validation method
-    def _is_json(self, payload):
-        """
-        Check if the payload message is a valid JSON string.
-        Raises a DaemonMessageValueError if the payload message is not a JSON string.
+        if self._daemon_socket:
+            self._daemon_socket.close()
 
+    def send_message(self, payload=None, custody=None, lifetime=None):
+        """
+        Create a bundle from a JSON payload message
+        and send it through IBRDTN daemon.
+     
         Parameters
         ----------
-            payload : expected JSON string
-                The message payload to be send.
+            payload : JSON
+                A JSON string that is gonna be bundle payload.
+            custody : boolean
+                Indicates if bundle custody is necessary.
+            lifetime : int
+                Message lifetime (in practice its bundle lifetime).
+
+        Raises
+        ------
+        DaemonConnectionError
+            Invalid value passed as parameter.
+        ValueError
+            Invalid arguments received passed.
         """
         try:
-            json.loads(payload)
-        except (JSONDecodeError, ValueError, TypeError) as error:
-            raise DaemonMessageValueError(
-                "Invalid payload message value,\npayload message must be a JSON string!", error)
+            if payload is None:
+                raise ValueError("Payload must be a string.")
+            if custody is None:
+                raise ValueError("Custody must be a boolean.")
+            if lifetime is None:
+                raise ValueError("Lifetime must be an integer.")
 
-    def _create_bundle(self, payload_message=None, custody=None):
+            self._send_bundle(
+                bundle=self._create_bundle(
+                    payload=payload, custody=custody, lifetime=lifetime
+                )
+            )
+            print("Sensor node: Message sent SUCCESSFULLY to the DTN daemon!")
+        except ValueError as error:
+            print("Message not sent: Invalid values provided. \n", error)
+        except DaemonConnectionError as error:
+            raise DaemonConnectionError("Failed to send dtn message. \n", error)
+
+    def _create_bundle(self, payload=None, custody=None, lifetime=None):
         """
-        Returns a bundle containing the string JSON payload message.
+        Returns a bundle containing the payload string.
 
         Parameters
         ----------
-        payload_message : JSON 
-            A payload message in JSON format that is gonna be the bundle payload.
+        payload : String
+            The payload contains a string value (e.g: a JSON/XML string).
 
         custody : Boolean
-            Enables the custody processing flag. The bundle processing flags indicate
-            if a bundle requires custody or not.
+            Enables the custody processing flag. The bundle processing flags
+            indicates if a bundle requires custody or not.
+            DEFAULT VALUE is None.
+            - Set to True, to indicate if a bundle requires custody.
+            - Set to False, to indicate if a bundle DOES NOT requires custody.
+
+        lifetime : int
+            Bundle lifetime.
         """
         # The bundle payload is a Base64 encoded string
-        bundle = "Source: %s\n" % self._DTN_SOURCE_EID
-        bundle += "Destination: %s\n" % self._DTN_DESTINATION_EID
-
+        bundle = "Source: %s\n" % self._dtn_source_eid
+        bundle += "Destination: %s\n" % self._destination_eid
         # Set bundle custody processing flag
-        if custody == True:
+        if custody is True:
             bundle += "Processing flags: 156\n"
         else:
             bundle += "Processing flags: 148\n"
-
+        bundle += "Lifetime: %d\n" % lifetime
         bundle += "Blocks: 1\n\n"
+
         bundle += "Block: 1\n"
         bundle += "Flags: LAST_BLOCK\n"
-        bundle += "Length: %d\n\n" % len(
-            bytes(payload_message, encoding="UTF-8"))
-        bundle += "%s\n\n" % str(base64.b64encode(
-            payload_message.encode(encoding="UTF-8")), encoding="UTF-8")
+        bundle += "Length: %d\n\n" % len(bytes(payload, encoding="UTF-8"))
+
+        bundle += "%s\n\n" % str(
+            base64.b64encode(payload.encode(encoding="UTF-8")),
+            encoding="UTF-8",
+        )
 
         return bundle
 
@@ -190,7 +268,8 @@ class IbrdtnDaemon():
 
         Parameters
         ----------
-        bundle : String 
+        bundle : String
+         
             A DTN bundle to be sent. It is formatted according to the format
             accepted by the IBRDTN daemon API.
         """
@@ -210,50 +289,7 @@ class IbrdtnDaemon():
             print("Bundle sent!\n")
 
         except (ConnectionError, BrokenPipeError) as error:
-            raise DaemonBundleUploadError(
-                "Connection problem to the DTN daemon, could not send the bundle!", error)
-
-    def send_message(self, payload_message=None, custody=None):
-        """
-        Create a bundle from a JSON payload message and send it through IBRDTN daemon.
-
-        Returns True, if the message was sent to the IBRDTN daemon succesfully.
-
-        Otherwise, returns False.
-
-        Parameters
-        ----------
-            payload_message : JSON 
-                A payload message in JSON format that is gonna be the bundle payload.
-
-            custody : Boolean
-                Enables the custody processing flag. The bundle processing flags indicate
-                if a bundle requires custody or not. DEFAULT VALUE is False.
-                - Set to True, to indicate if a bundle requires custody.
-                - Set to False, to indicate if a bundle DOES NOT requires custody.
-        """
-        try:
-            # Check method parameters
-            if payload_message is None:
-                raise DaemonMessageValueError(
-                    "Payload message value can not be None, payload message must be a JSON string.")
-            if custody is None:
-                raise DaemonMessageValueError(
-                    "Custody value can not be None, custody must a boolean value.")
-
-            # Check if payload is a valid json string
-            self._is_json(payload_message)
-
-            # Build the bundle containing the payload message
-            bundle = self._create_bundle(
-                payload_message=payload_message, custody=custody)
-
-            # Send the message to the IBRDTN daemon
-            self._send_bundle(bundle=bundle)
-
-            # Message sent succesfully!
-            return True
-        except (DaemonMessageValueError, DaemonBundleUploadError) as error:
-            print("Failed to send dtn message: ", error)
-            # Failed to send message!
-            return False
+            raise DaemonConnectionError(
+                "Could not send bundle! Try to connect to daemon again.\n",
+                error,
+            )

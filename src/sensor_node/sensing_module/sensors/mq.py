@@ -22,7 +22,6 @@ class MQSensorException(Exception):
     which should not happen in practice, but sometimes there is a bad connection in the
     protoboard.
     """
-    pass
 
 
 class MQSensor(Sensor):
@@ -38,8 +37,8 @@ class MQSensor(Sensor):
     VCC_PI_INPUT_MAX = 3.3
     # Preheat time in seconds, usually 30 minutes
     PREHEAT_TIME = env.int("MQ_PREHEAT_TIME", default=None)
-    if(PREHEAT_TIME is None):
-        raise ValueError('MQ_PREHEAT_TIME must be declared.')
+    if PREHEAT_TIME is None:
+        raise ValueError("MQ_PREHEAT_TIME must be declared.")
 
     ######################### Software Related Macros #########################
     # Defines the amount of samples to be used during the calibration phase.
@@ -51,45 +50,64 @@ class MQSensor(Sensor):
     # Sets the time interval (in seconds) between samples during the reading phase.
     READING_MODE_SAMPLES_INTERVAL = 0.5
 
-    def __init__(self, NAME=None, R1=None, R2=None, MQ_ADC_PIN=None, RL_VALUE=None, RO_CLEAN_AIR=None,
-                 A_EXPO=None,  M_EXPO=None, RSRO_CLEAN_AIR=None, MIN_CONCENTRATION=None, MAX_CONCENTRATION=None,
-                 MIN_HUMIDITY=None, MAX_HUMIDITY=None, MIN_TEMPERATURE=None, MAX_TEMPERATURE=None):
+    def __init__(
+        self,
+        NAME=None,
+        R1=None,
+        R2=None,
+        MQ_ADC_PIN=None,
+        RL_VALUE=None,
+        RO_CLEAN_AIR=None,
+        A_EXPO=None,
+        M_EXPO=None,
+        RSRO_CLEAN_AIR=None,
+        MIN_CONCENTRATION=None,
+        MAX_CONCENTRATION=None,
+        MIN_HUMIDITY=None,
+        MAX_HUMIDITY=None,
+        MIN_TEMPERATURE=None,
+        MAX_TEMPERATURE=None,
+    ):
         """
         Creates a MQ sensor instance.
         """
 
-        if(NAME is None):
+        if NAME is None:
             raise ValueError("NAME value must be declared")
-        if(R1 is None):
+        if R1 is None:
             raise ValueError("R1 value must be declared")
-        if(R2 is None):
+        if R2 is None:
             raise ValueError("R2 value must be declared")
-        if(MQ_ADC_PIN is None):
+        if MQ_ADC_PIN is None:
             raise ValueError("MQ_ADC_PIN value must be declared")
-        if(RL_VALUE is None):
+        if RL_VALUE is None:
             raise ValueError("RL_VALUE value must be declared")
-        if(A_EXPO is None):
+        if A_EXPO is None:
             raise ValueError("A_EXPO value must be declared")
-        if(M_EXPO is None):
+        if M_EXPO is None:
             raise ValueError("M_EXPO value must be declared")
-        if(RSRO_CLEAN_AIR is None):
+        if RSRO_CLEAN_AIR is None:
             raise ValueError("RSRO_CLEAN_AIR factor must be declared")
-        if(MIN_CONCENTRATION is None):
+        if MIN_CONCENTRATION is None:
             raise ValueError("MIN_CONCENTRATION value must be declared")
-        if(MAX_CONCENTRATION is None):
+        if MAX_CONCENTRATION is None:
             raise ValueError("MAX_CONCENTRATION value must be declared")
-        if(MIN_HUMIDITY is None):
+        if MIN_HUMIDITY is None:
             raise ValueError("MIN_HUMIDITY value must be declared")
-        if(MAX_HUMIDITY is None):
+        if MAX_HUMIDITY is None:
             raise ValueError("MAX_HUMIDITY value must be declared")
-        if(MIN_TEMPERATURE is None):
+        if MIN_TEMPERATURE is None:
             raise ValueError("MIN_TEMPERATURE value must be declared")
-        if(MAX_TEMPERATURE is None):
+        if MAX_TEMPERATURE is None:
             raise ValueError("MAX_TEMPERATURE value must be declared")
 
-        if(RO_CLEAN_AIR is None):
-            print("Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
-        to calculate Ro value in clean air.".format(NAME))
+        if RO_CLEAN_AIR is None:
+            print(
+                "Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+        to calculate Ro value in clean air.".format(
+                    NAME
+                )
+            )
         else:
             print("Sensor {0} RO_CLEAN_AIR value declared.".format(NAME))
 
@@ -107,11 +125,11 @@ class MQSensor(Sensor):
         self._adc = ADC(pin_adc=MQ_ADC_PIN)  # ADC channel (MCP3008)
 
         #### RASPBERRY VOLTAGE DIVIDER (from circuit values) ####
-        self.R1 = R1                       # 10kOhms
-        self.R2 = R2                       # 20kOhms
+        self.R1 = R1  # 10kOhms
+        self.R2 = R2  # 20kOhms
 
         #### MQSENSOR Sensor ####
-        self.NAME = NAME                  # MQ Sensor name/alias
+        self.NAME = NAME  # MQ Sensor name/alias
 
         # Environment working conditions
         self.MIN_HUMIDITY = MIN_HUMIDITY
@@ -124,10 +142,10 @@ class MQSensor(Sensor):
 
         # RSRO_CLEAN_AIR = RS/RO in pure air
         self.RSRO_CLEAN_AIR = RSRO_CLEAN_AIR
-                                                          # obtained from datasheet using webplotdigitilizer
+        # obtained from datasheet using webplotdigitilizer
 
-                                                               # By the datasheet figure we have to select
-                                                          # the max and min gas concentration sensibility points.
+        # By the datasheet figure we have to select
+        # the max and min gas concentration sensibility points.
         # minimum concentration sensibility of gas sensor
         self.MIN_CONCENTRATION = MIN_CONCENTRATION
         # maximum concentration sensibility of gas sensor
@@ -194,12 +212,14 @@ class MQSensor(Sensor):
 
         except ZeroDivisionError:
             raise MQSensorException(
-                'ZeroDivisionError: Failed to read MQ sensor, VPIN returned 0V, check wiring!')
-        except MQSensorException:
+                "ZeroDivisionError: Failed to read MQ sensor, VPIN returned 0V, check wiring!"
+            )
+        except Exception:
             raise MQSensorException(
-                'Failed to read MQ sensor. Check wiring and parameter values!')
+                "Failed to read MQ sensor. Check wiring and parameter values!"
+            )
 
-    def calibrate_ro(self,  current_humidity=None, current_temperature=None):
+    def calibrate_ro(self, current_humidity=None, current_temperature=None):
         """
         Returns to stdout the Ro value in clean air if the sensor is in working temperature and humidty range.
         Otherwise, returns None
@@ -209,15 +229,19 @@ class MQSensor(Sensor):
         to obtain the RO_CLEAN_AIR value in clean air.
 
         """
-        if(current_humidity is None):
-            raise ValueError('Humidity value must be informed')
-        if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
+        if current_humidity is None:
+            raise ValueError("Humidity value must be informed")
+        if current_temperature is None:
+            raise ValueError("Temperature value must be informed")
 
         print(
-            'Calibrating  Sensor {0} Ro value in clean air...'.format(self.NAME))
+            "Calibrating  Sensor {0} Ro value in clean air...".format(self.NAME)
+        )
         # Check if MQ sensor is in valid environment working conditions
-        if self._check_working_conditions(current_humidity=current_humidity, current_temperature=current_temperature):
+        if self._check_working_conditions(
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
+        ):
 
             rs = 0.0
 
@@ -225,11 +249,11 @@ class MQSensor(Sensor):
                 rs += self._read_RS()
                 time.sleep(self.CALIBRATION_SAMPLES_INTERVAL)
 
-            rs = rs / self.CALIBRATION_SAMPLES    # Calculate the readings average
+            rs = rs / self.CALIBRATION_SAMPLES  # Calculate the readings average
 
-            ro = rs / self.RSRO_CLEAN_AIR         # Calculate RO value in clean air
-                                               # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
-                                               # RSRO_CLEAN_AIR is obtained from the datasheet
+            ro = rs / self.RSRO_CLEAN_AIR  # Calculate RO value in clean air
+            # RS/RO = RSRO_CLEAN_AIR => RO = RS/RSRO_CLEAN_AIR
+            # RSRO_CLEAN_AIR is obtained from the datasheet
 
             ro = round(ro, 3)
 
@@ -238,8 +262,11 @@ class MQSensor(Sensor):
         else:
             print("Calibrating Ro in clean air...failed!")
             print("{0} RO_CLEAN_AIR = {1}".format(self.NAME, None))
-            print("Sensor {0} is not in environment working conditions: Invalid temperature or humidity condition!".format(
-                self.NAME))
+            print(
+                "Sensor {0} is not in environment working conditions: Invalid temperature or humidity condition!".format(
+                    self.NAME
+                )
+            )
 
     def _get_average_rs(self):
         """
@@ -253,7 +280,7 @@ class MQSensor(Sensor):
             rs += self._read_RS()
             time.sleep(self.READING_MODE_SAMPLES_INTERVAL)
 
-        rs = rs/self.READING_MODE_SAMPLES         # Calculate the readings average
+        rs = rs / self.READING_MODE_SAMPLES  # Calculate the readings average
 
         return rs
 
@@ -264,19 +291,28 @@ class MQSensor(Sensor):
         sensors.
         """
         print(
-            'Calibrating MQ sensor pre-heat time ({0} seconds)...'.format(self.PREHEAT_TIME))
+            "Calibrating MQ sensor pre-heat time ({0} seconds)...".format(
+                self.PREHEAT_TIME
+            )
+        )
 
         time.sleep(self.PREHEAT_TIME)
 
         print(
-            'Calibrating MQ sensor pre-heat time ({0} seconds)... done!'.format(self.PREHEAT_TIME))
+            "Calibrating MQ sensor pre-heat time ({0} seconds)... done!".format(
+                self.PREHEAT_TIME
+            )
+        )
 
     def _check_temperature_range(self, current_temperature=None):
         """
         Returns True if current temperature is in the temperature working condition range of the MQ sensor.
         Otherwise, returns False.
         """
-        if(current_temperature >= self.MIN_TEMPERATURE and current_temperature <= self.MAX_TEMPERATURE):
+        if (
+            current_temperature >= self.MIN_TEMPERATURE
+            and current_temperature <= self.MAX_TEMPERATURE
+        ):
             return True
         return False
 
@@ -285,15 +321,22 @@ class MQSensor(Sensor):
         Returns True if current humidity is in the humidity working condition range of the MQ sensor.
         Otherwise, returns False.
         """
-        if(current_humidity >= self.MIN_HUMIDITY and current_humidity < self.MAX_HUMIDITY):
+        if (
+            current_humidity >= self.MIN_HUMIDITY
+            and current_humidity < self.MAX_HUMIDITY
+        ):
             return True
         return False
 
-    def _check_working_conditions(self, current_humidity=None, current_temperature=None):
+    def _check_working_conditions(
+        self, current_humidity=None, current_temperature=None
+    ):
         """
         Return True if the MQ sensor is in environment working range. Otherwise, returns False.
         """
-        if (self._check_temperature_range(current_temperature) and self._check_humidity_range(current_humidity)):
+        if self._check_temperature_range(
+            current_temperature
+        ) and self._check_humidity_range(current_humidity):
             return True
         return False
 
@@ -303,7 +346,10 @@ class MQSensor(Sensor):
 
         Otherwise, returns False.
         """
-        if(gas_concentration >= self.MIN_CONCENTRATION and gas_concentration <= self.MAX_CONCENTRATION):
+        if (
+            gas_concentration >= self.MIN_CONCENTRATION
+            and gas_concentration <= self.MAX_CONCENTRATION
+        ):
             return True
         return False
 
@@ -312,16 +358,20 @@ class MQSensor(Sensor):
         Returns the actual gas concentration calculated/measured by the sensor.
         The value is rounded to 3 decimal digits.
         """
-        if(self.RO_CLEAN_AIR is None):
-            raise ValueError("Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
-                          to calculate Ro value in clean air.".format(self.NAME))
+        if self.RO_CLEAN_AIR is None:
+            raise ValueError(
+                "Sensor {0} RO_CLEAN_AIR value must be declared. Use calibrate_ro \
+                          to calculate Ro value in clean air.".format(
+                    self.NAME
+                )
+            )
 
         # Get actual rs and rsro ratio
         rs = self._get_average_rs()
         ratio_rsro = rs / self.RO_CLEAN_AIR
 
         # Equation to obtain gas concentration => gas_concentration = a*x^m, x = Rs/Ro
-        gas_concentration = (self.A_EXPO * pow(ratio_rsro, self.M_EXPO))
+        gas_concentration = self.A_EXPO * pow(ratio_rsro, self.M_EXPO)
 
         return round(gas_concentration, 3)
 
@@ -345,20 +395,19 @@ class MQSensor(Sensor):
           Temperature in degrees Celsius.
         """
         # Check if parameters were informed
-        if(current_humidity is None):
-            raise ValueError('Humidity value must be informed')
-        if(current_temperature is None):
-            raise ValueError('Temperature value must be informed')
+        if current_humidity is None:
+            raise ValueError("Humidity value must be informed")
+        if current_temperature is None:
+            raise ValueError("Temperature value must be informed")
 
-        # Check if MQ sensor is not in valid environment working conditions
-        if not self._check_working_conditions(current_humidity=current_humidity, current_temperature=current_temperature):
-            return None
-
-        # Get current gas value measured by the sensor
         gas_concentration = self._measure_current_gas_concentration()
 
-        # Check if the gas concentration measured is in the sensibility range of the sensor.
-        if self._check_sensor_sensibility_range(gas_concentration=gas_concentration):
+        if self._check_working_conditions(
+            current_humidity=current_humidity,
+            current_temperature=current_temperature,
+        ) and self._check_sensor_sensibility_range(
+            gas_concentration=gas_concentration
+        ):
             return gas_concentration
         else:
             return None
