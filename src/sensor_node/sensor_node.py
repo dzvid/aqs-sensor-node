@@ -4,11 +4,16 @@ import json
 import datetime
 from environs import Env
 
-from .sensing_module.sensing_module import SensingModule
-from .communication_module.communication_module import CommunicationModule
 
-from .sensing_module.sensing_module import SensingModuleCreationError
-from .communication_module.communication_module import CommunicationModuleCreationError
+from .sensing_module.sensing_module import (
+    SensingModule,
+    SensingModuleCreationError,
+)
+from .communication_module.communication_module import (
+    CommunicationModule,
+    CommunicationModuleCreationError,
+)
+from .message import Message
 
 
 # Load enviroment variables
@@ -36,111 +41,89 @@ class SensorNode:
     def __init__(self):
         try:
             # Load sensor node parameters
-            self._SENSOR_NODE_UUID = env.str('SENSOR_NODE_UUID', default=None)
-            self._SENSOR_NODE_READING_INTERVAL = env.int(
-                'SENSOR_NODE_READING_INTERVAL', default=None)
-            self._SENSOR_NODE_MQTT_DATA_TOPIC = env.str(
-                'SENSOR_NODE_MQTT_DATA_TOPIC', default=None)
+            self._uuid = env.str("SENSOR_NODE_UUID", default=None)
+            self._reading_interval = env.int(
+                "SENSOR_NODE_READING_INTERVAL", default=None
+            )
 
-            if(self._SENSOR_NODE_UUID is None):
+            if self._uuid is None:
+                raise ValueError("SENSOR_NODE_UUID value must be provided.")
+            if self._reading_interval is None:
                 raise ValueError(
-                    'SENSOR_NODE_UUID value must be provided.')
-            if(self._SENSOR_NODE_READING_INTERVAL is None):
-                raise ValueError(
-                    'SENSOR_NODE_READING_INTERVAL must be provided.')
-            if(self._SENSOR_NODE_MQTT_DATA_TOPIC is None):
-                raise ValueError(
-                    'SENSOR_NODE_MQTT_DATA_TOPIC must be provided.')
+                    "SENSOR_NODE_READING_INTERVAL must be provided."
+                )
 
             # Create sensor node modules
             self.sensing_module = SensingModule()
             self.communication_module = CommunicationModule()
 
-        except (ValueError, CommunicationModuleCreationError, SensingModuleCreationError) as error:
+        except (
+            ValueError,
+            CommunicationModuleCreationError,
+            SensingModuleCreationError,
+        ) as error:
             raise SensorNodeCreationError(
-                'Failed to create a sensor node instance: ', error)
+                "Failed to create a sensor node instance.\n", error
+            )
 
-    def begin(self):
+    def startup(self):
         """
         Sensor node initialization.
         """
-        print('Initializating sensor node....')
+        print("Initializating sensor node....")
 
         self.sensing_module.calibrate_sensors()
 
-        print('Initializating sensor node....done!')
+        print("Initializating sensor node....done!")
 
     def sensing_mode(self):
         """
-        Sensor node sensing mode: collects readings and send them to the server.
+        Get sensors readings from sensing module and send them to communicatio
+        module.
         """
         print("Sensor node in sensing mode!")
 
         while True:
-            # Set initial reading value
-            current_reading = None
-
             current_reading = self.sensing_module.read_sensors()
 
             if current_reading is not None:
+                message = self._generate_message(reading=current_reading)
+                self.communication_module.send_message(message=message)
 
-                json_payload_message = self._generate_message(
-                    reading=current_reading)
-
-                reading_sent = self.communication_module.send_dtn_message(
-                    message=json_payload_message)
-
-                if(reading_sent):
-                    print('Sensor node: Message sent SUCCESSFULLY to the DTN daemon!')
-                else:
-                    print('Sensor node: Message FAILED to be sent to the DTN daemon!')
-            else:
-                print('Sensor node: FAILED to read the sensors')
-
-            self._wait_interval_next_reading(
-                reading_interval=self._SENSOR_NODE_READING_INTERVAL)
+            self._wait_time_interval_next_reading()
 
     def _generate_message(self, reading=None):
         """
-        Returns a JSON string containing the sensor reading collected.
-
-        The JSON has two keys:
-          - topic: string topic to publish the sensor reading.
-
-          - payload: json containing the sensor node information and 
-                  the values read from the sensors.
+        Generates a message containing a reading to be sent over DTN.
 
         Parameters
         ----------
-        reading : dict
-            A dictionary containing the sensor measured values. 
-        """
-        reading['uuid'] = self._SENSOR_NODE_UUID
-        reading['collected_at'] = self._get_current_datetime()
+        reading : Reading
+            A Reading object representing a sensors reading.
 
-        payload_message = dict()
-        payload_message['topic'] = self._SENSOR_NODE_MQTT_DATA_TOPIC
-        payload_message['payload'] = reading
-
-        return json.dumps(payload_message)
-
-    def _get_current_datetime(self):
-        """
-        Returns the local datetime in ISO 8601 format with timezone 
-        and no microsecond info.
-        Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
+        Returns
+        ---------
+        A Message object containg a payload and a custody. 
+        Payload has a JSON with two keys:
+          sensor_node : sensor node uuid;
+          reading : contains a reading collected from sensors.
+        Custody: no custody transference is used.
         """
 
-       # Calculate the offset taking into account daylight saving time
-        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
-        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
-        collected_at = datetime.datetime.now().replace(
-            microsecond=0, tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
-        return collected_at
+        payload = {
+            "sensor_node": {"uuid": self._uuid},
+            "reading": reading.to_dict(),
+        }
 
-    def _wait_interval_next_reading(self, reading_interval=None):
-        '''
-        Delay execution for a fixed time interval before take a new sensor node reading.
-        Args: reading_interval Time interval in seconds to wait until next reading.
-        '''
-        time.sleep(reading_interval)
+        return Message(
+            payload=json.dumps(payload),
+            custody=env.bool("MESSAGE_CUSTODY", default=None),
+            lifetime=env.int("MESSAGE_LIFETIME", default=None),
+        )
+
+    def _wait_time_interval_next_reading(self):
+        """
+        Delay execution for a fixed time interval before take a new sensor node
+        reading.
+        """
+        time.sleep(self._reading_interval)

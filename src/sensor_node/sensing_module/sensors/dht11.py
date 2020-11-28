@@ -15,6 +15,7 @@ class DHT11Exception(Exception):
     """
     Unable to get a reading from DHT11.
     """
+
     pass
 
 
@@ -26,21 +27,21 @@ class DHT11(Sensor):
     def __init__(self):
         self._sensor = Adafruit_DHT.DHT11
 
-        self._pin = env.int('DHT11_PIN', default=None)
+        self._pin = env.int("DHT11_PIN", default=None)
 
-        if (self._pin is None):
-            raise ValueError('DHT pin value must be informed.')
+        if self._pin is None:
+            raise ValueError("DHT pin value must be informed.")
 
     def calibrate(self):
         """
         During the DHT11 booting time (when the circuit turns on), the datasheet
         informs to wait 1 second before the sensor is able to respond to any commands.
         """
-        print('Calibrating DHT11 sensor...')
+        print("Calibrating DHT11 sensor...")
 
         time.sleep(1)
 
-        print('Calibrating DHT11 sensor...done!')
+        print("Calibrating DHT11 sensor...done!")
 
     def get_humidity(self):
         """
@@ -59,8 +60,7 @@ class DHT11(Sensor):
         """
 
         # (Can take up to 30 seconds)
-        humidity, _temperature = Adafruit_DHT.read_retry(
-            self._sensor, self._pin)
+        humidity, _temperature = Adafruit_DHT.read_retry(self._sensor, self._pin)
 
         if humidity is not None:
             return round(humidity, 3)
