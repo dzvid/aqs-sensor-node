@@ -119,6 +119,12 @@ class IbrdtnDaemon:
                 )
                 self._connect_to_daemon()
                 connected = True
+                print(
+                    "IBRDTNDaemon: Trying to connect \
+                      to daemon, try n° {0}... connected!".format(
+                        current_try + 1
+                    )
+                )
             except ConnectionError:
                 current_try += 1
                 sleep(30)
