@@ -18,4 +18,7 @@ if __name__ == "__main__":
     except Exception as error:
         print("Exception: {0}".format(error))
     finally:
-        node.communication_module.close_connections()
+        if node is not None:
+            node.communication_module.close_connections()
+        else:
+            print("Failed to create a sensor node instance!")
