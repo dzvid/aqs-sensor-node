@@ -1,4 +1,5 @@
 import time
+import datetime
 
 from environs import Env
 
@@ -78,10 +79,23 @@ class SensorNode:
         """
         print("Sensor node in sensing mode!")
 
+        started_at = (
+            datetime.datetime.now()
+            .astimezone()
+            .replace(microsecond=0)
+            .isoformat()
+        )
+        msg_sent = 0
+        read_total_tries = 0
+        read_success = 0
+        read_failure = 0
+
         while True:
+            read_total_tries += 1
             current_reading = self.sensing_module.read_sensors()
 
             if current_reading is not None:
+                read_success += 1
                 payload = self._generate_sensor_node_reading_payload(
                     reading=current_reading
                 )
@@ -89,6 +103,17 @@ class SensorNode:
                     payload=payload
                 )
                 self.communication_module.send_message(message=message)
+                msg_sent += 1
+            else:
+                read_failure += 1
+
+            print("-------STATUS--------\n")
+            print("Started at: {0}".format(started_at))
+            print("Total readings tries: {0} \n".format(read_total_tries))
+            print("Success reading: {0} \n".format(read_success))
+            print("Failure reading: {0} \n".format(read_failure))
+            print("Total messages sent over dtn: {0}\n".format(msg_sent))
+            print("---------------------\n")
 
             self._wait_time_interval_next_reading()
 

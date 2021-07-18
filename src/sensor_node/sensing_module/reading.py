@@ -25,19 +25,15 @@ class Reading:
     def _register_collected_at_date(self):
         """
         Returns the local datetime in ISO 8601 format with timezone.
-        and no microsecond info. Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
+        and no microseconds info. Output format: "%Y-%m-%dT%H:%M:%S%Timezone"
         """
-
-        # Calculate the offset taking into account daylight saving time
-        utc_offset_sec = (
-            time.altzone if time.localtime().tm_isdst else time.timezone
-        )
-        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
         collected_at = (
             datetime.datetime.now()
-            .replace(microsecond=0, tzinfo=datetime.timezone(offset=utc_offset))
+            .astimezone()
+            .replace(microsecond=0)
             .isoformat()
         )
+
         return collected_at
 
     def to_dict(self):
