@@ -82,7 +82,7 @@ class SensorNode:
             current_reading = self.sensing_module.read_sensors()
 
             if current_reading is not None:
-                payload = self._generate_reading_payload(
+                payload = self._generate_sensor_node_reading_payload(
                     reading=current_reading
                 )
                 message = self.communication_module.generate_message(
