@@ -6,7 +6,7 @@ from time import sleep
 from environs import Env
 
 
-# Load enviroment variables
+# Load environment variables
 env = Env()
 env.read_env()
 
@@ -96,10 +96,11 @@ class IbrdtnDaemon:
 
     def create_connection(self):
         """
-          Attempts to create connection to IBRDTN daemon 20 times, taking 30 seconds
-          interval between each try.
-          If connection is unsuccessful, throws a DaemonConnectionError exception.
-          """
+          Attempts to create connection to IBRDTN daemon 20 times,
+          taking a 30 seconds interval between each try.
+          If connection is unsuccessful, throws a DaemonConnectionError
+          exception.
+        """
         self._daemon_socket = None
         self._daemon_stream = None
         self._dtn_source_eid = None
@@ -111,7 +112,8 @@ class IbrdtnDaemon:
         while not connected and current_try < max_tries:
             try:
                 print(
-                    "IBRDTNDaemon: Trying to connect to daemon, try n° {0}".format(
+                    "IBRDTNDaemon: Trying to connect \
+                      to daemon, try n° {0}".format(
                         current_try + 1
                     )
                 )
@@ -123,7 +125,8 @@ class IbrdtnDaemon:
 
         if not connected and current_try == max_tries:
             raise DaemonConnectionError(
-                "Failed to create_connection to IBRDTN after {0} tries. Please, check IBRDTN daemon.".format(
+                "Failed to create_connection to IBRDTN after {0} tries. \
+                Please, check IBRDTN daemon.".format(
                     max_tries
                 )
             )
@@ -174,26 +177,23 @@ class IbrdtnDaemon:
         """
         Closes stream (file descriptor) and socket to IBTDTN daemon API.
         """
+        print("Closing connection to IBRDRN...")
         self._dtn_source_eid = None
         if self._daemon_stream:
             self._daemon_stream.close()
 
         if self._daemon_socket:
             self._daemon_socket.close()
+        print("Connection to IBRDRN closed!")
 
-    def send_message(self, payload=None, custody=None, lifetime=None):
+    def send_message(self, message=None):
         """
-        Create a bundle from a JSON payload message
+        Create a bundle from a message
         and send it through IBRDTN daemon.
      
         Parameters
         ----------
-            payload : JSON
-                A JSON string that is gonna be bundle payload.
-            custody : boolean
-                Indicates if bundle custody is necessary.
-            lifetime : int
-                Message lifetime (in practice its bundle lifetime).
+            message : A Message object
 
         Raises
         ------
@@ -203,16 +203,11 @@ class IbrdtnDaemon:
             Invalid arguments received passed.
         """
         try:
-            if payload is None:
-                raise ValueError("Payload must be a string.")
-            if custody is None:
-                raise ValueError("Custody must be a boolean.")
-            if lifetime is None:
-                raise ValueError("Lifetime must be an integer.")
-
             self._send_bundle(
                 bundle=self._create_bundle(
-                    payload=payload, custody=custody, lifetime=lifetime
+                    payload=message.payload,
+                    custody=message.custody,
+                    lifetime=message.lifetime,
                 )
             )
             print("Sensor node: Message sent SUCCESSFULLY to the DTN daemon!")
@@ -228,7 +223,7 @@ class IbrdtnDaemon:
         Parameters
         ----------
         payload : String
-            The payload contains a string value (e.g: a JSON/XML string).
+            The payload contains a string value (e.g: a JSON string).
 
         custody : Boolean
             Enables the custody processing flag. The bundle processing flags
@@ -269,18 +264,15 @@ class IbrdtnDaemon:
         Parameters
         ----------
         bundle : String
-         
-            A DTN bundle to be sent. It is formatted according to the format
-            accepted by the IBRDTN daemon API.
+          A DTN bundle to be sent. It is formatted according to the format
+          accepted by the IBRDTN daemon API.
         """
 
         try:
             self._daemon_socket.send(b"bundle put plain\n")
             self._daemon_stream.readline()
-
             self._daemon_socket.send(bytes(bundle, encoding="UTF-8"))
             self._daemon_stream.readline()
-
             self._daemon_socket.send(b"bundle send\n")
             self._daemon_stream.readline()
 

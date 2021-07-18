@@ -33,7 +33,8 @@ class BME280(Sensor):
             i2c=self._i2c, address=0x76
         )
 
-        # change BME280_LOCAL_SEA_LEVEL in .env to match the location's pressure (hPa) at sea level
+        # change BME280_LOCAL_SEA_LEVEL in .env to match the
+        # location's pressure (hPa) at sea level
         # default is sea level pressure 1013.25
         self._local_sea_level = env.float(
             "BME280_LOCAL_SEA_LEVEL", default=None
@@ -55,7 +56,7 @@ class BME280(Sensor):
 
     def get_pressure(self):
         """
-        The pressure in hectoPascals (hPa).
+        Returns pressure in hectoPascals (hPa).
         """
         try:
 
@@ -69,7 +70,7 @@ class BME280(Sensor):
             )
 
     def get_temperature(self):
-        """The sensor temperature in degrees Celsius."""
+        """Returns temperature in degrees Celsius."""
         try:
 
             return round(self._bme280.temperature, 3)
@@ -78,11 +79,12 @@ class BME280(Sensor):
             raise BME280Exception(
                 "I/O error: Problem reading BME280 sensor, communication \
                                   error that is unlikely to re-occur \
-                                  (e.g. I2C (or SPI) connection glitch or wiring problem."
+                                  (e.g. I2C (or SPI) connection glitch \
+                                  or wiring problem."
             )
 
     def get_humidity(self):
-        """The humidity as a value from 0 to 100%."""
+        """Returns humidity as a value between 0 and 100%."""
         try:
 
             return round(self._bme280.humidity, 3)
@@ -91,5 +93,6 @@ class BME280(Sensor):
             raise BME280Exception(
                 "I/O error: Problem reading BME280 sensor, communication \
                                   error that is unlikely to re-occur \
-                                  (e.g. I2C (or SPI) connection glitch or wiring problem."
+                                  (e.g. I2C (or SPI) connection glitch \
+                                  or wiring problem."
             )

@@ -1,6 +1,5 @@
 import time
 import datetime
-import json
 
 
 class Reading:
@@ -10,18 +9,14 @@ class Reading:
 
     def __init__(
         self,
-        carbon_monoxide,
-        pm2_5,
+        pm25,
         pm10,
-        ozone,
-        temperature,
-        relative_humidity,
-        pressure,
+        temperature=None,
+        relative_humidity=None,
+        pressure=None,
     ):
-        self.carbon_monoxide = carbon_monoxide
-        self.pm2_5 = pm2_5
+        self.pm25 = pm25
         self.pm10 = pm10
-        self.ozone = ozone
         self.temperature = temperature
         self.relative_humidity = relative_humidity
         self.pressure = pressure
@@ -48,13 +43,10 @@ class Reading:
     def to_dict(self):
         """
         Returns reading in a dict.
-        PS: You could also use __dict__ instead
         """
         reading = {
-            "carbon_monoxide": self.carbon_monoxide,
-            "pm2_5": self.pm2_5,
+            "pm25": self.pm25,
             "pm10": self.pm10,
-            "ozone": self.ozone,
             "temperature": self.temperature,
             "relative_humidity": self.relative_humidity,
             "pressure": self.pressure,

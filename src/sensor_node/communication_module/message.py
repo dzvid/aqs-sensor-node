@@ -8,16 +8,17 @@ env.read_env()
 
 class Message:
     """
-    A class that represents a message sent over DTN.
+    A class that represents a message to be sent over DTN.
 
-    A message has following attributes:
+    A message have following attributes:
     
-      payload (String): A JSON string to be sent over the network;
+      - payload (String): A JSON string to be sent over the network;
 
-      custody (Boolean): A boolean flag indicating if DTN custody will be used.
+      - custody (Boolean): A boolean flag indicating if DTN custody 
+        will be used.
         By default, custody is False. Set to True to enable it for a message;
 
-      lifetime (int): Message lifetime in seconds;
+      - lifetime (int): Message lifetime in seconds;
     """
 
     def __init__(self, payload=None, custody=False, lifetime=None):
