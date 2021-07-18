@@ -37,7 +37,6 @@ class SensorNode:
 
     def __init__(self):
         try:
-            # Load sensor node parameters
             self._uuid = env.str("SENSOR_NODE_UUID", default=None)
             self._reading_interval = env.int(
                 "SENSOR_NODE_READING_INTERVAL", default=None
@@ -50,9 +49,8 @@ class SensorNode:
                     "SENSOR_NODE_READING_INTERVAL must be provided."
                 )
 
-            # Create sensor node modules
-            self._sensing_module = SensingModule()
-            self._communication_module = CommunicationModule()
+            self.sensing_module = SensingModule()
+            self.communication_module = CommunicationModule()
 
         except (
             ValueError,
@@ -69,7 +67,7 @@ class SensorNode:
         """
         print("Initializing sensor node....")
 
-        self._sensing_module.calibrate_sensors()
+        self.sensing_module.calibrate_sensors()
 
         print("Initializing sensor node....done!")
 
@@ -81,16 +79,16 @@ class SensorNode:
         print("Sensor node in sensing mode!")
 
         while True:
-            current_reading = self._sensing_module.read_sensors()
+            current_reading = self.sensing_module.read_sensors()
 
             if current_reading is not None:
                 payload = self._generate_reading_payload(
                     reading=current_reading
                 )
-                message = self._communication_module.generate_message(
+                message = self.communication_module.generate_message(
                     payload=payload
                 )
-                self._communication_module.send_message(message=message)
+                self.communication_module.send_message(message=message)
 
             self._wait_time_interval_next_reading()
 
