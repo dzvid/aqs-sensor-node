@@ -1,9 +1,11 @@
-from environs import Env
+import json
 
+from environs import Env
 from .ibrdtn_daemon import (
     IbrdtnDaemon,
     DaemonConnectionError,
 )
+from .message import Message
 
 env = Env()
 env.read_env()
@@ -60,20 +62,42 @@ class CommunicationModule:
         sent = False
         while not sent:
             try:
-                self._dtn_client.send_message(
-                    payload=message.payload,
-                    custody=message.custody,
-                    lifetime=message.lifetime,
-                )
+                self._dtn_client.send_message(message)
                 sent = True
             except DaemonConnectionError:
                 try:
                     self._dtn_client.create_connection()
                 except DaemonConnectionError as error:
                     raise CommunicationModuleException(
-                        "Communication module: Unable to send message due to connection problems to IBRDTN, perhaps not running or crashed? \n",
+                        "Communication module: Unable to send message due to \
+                          a connection problem to IBRDTN daemon, perhaps not \
+                          running or crashed? \n",
                         error,
                     )
+
+    def generate_message(self, payload=None):
+        """
+        Generates a message containing a payload to be sent over DTN.
+
+        Parameters
+        ----------
+        payload : JSON
+            Payload must be a JSON.
+
+        Returns
+        ---------
+        A Message object containing following keys: a payload, a custody and
+        a message's lifetime.
+          - Payload: Contains data to be sent in JSON format.
+          - Custody: Message custody, defaults to no custody transference.
+          - Lifetime: Message's lifetime, defaults to a week (604800 seconds).
+        """
+
+        return Message(
+            payload=json.dumps(payload),
+            custody=env.bool("MESSAGE_CUSTODY", default=None),
+            lifetime=env.int("MESSAGE_LIFETIME", default=604800),
+        )
 
     def close_connections(self):
         self._dtn_client.close_connection()

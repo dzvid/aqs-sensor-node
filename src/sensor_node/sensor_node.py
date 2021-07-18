@@ -1,7 +1,5 @@
 import time
-import json
 
-import datetime
 from environs import Env
 
 
@@ -13,10 +11,9 @@ from .communication_module.communication_module import (
     CommunicationModule,
     CommunicationModuleCreationError,
 )
-from .message import Message
 
 
-# Load enviroment variables
+# Load environment variables
 env = Env()
 env.read_env()
 
@@ -54,8 +51,8 @@ class SensorNode:
                 )
 
             # Create sensor node modules
-            self.sensing_module = SensingModule()
-            self.communication_module = CommunicationModule()
+            self._sensing_module = SensingModule()
+            self._communication_module = CommunicationModule()
 
         except (
             ValueError,
@@ -70,56 +67,54 @@ class SensorNode:
         """
         Sensor node initialization.
         """
-        print("Initializating sensor node....")
+        print("Initializing sensor node....")
 
-        self.sensing_module.calibrate_sensors()
+        self._sensing_module.calibrate_sensors()
 
-        print("Initializating sensor node....done!")
+        print("Initializing sensor node....done!")
 
     def sensing_mode(self):
         """
-        Get sensors readings from sensing module and send them to communicatio
+        Get sensors readings from sensing module and send them to communication
         module.
         """
         print("Sensor node in sensing mode!")
 
         while True:
-            current_reading = self.sensing_module.read_sensors()
+            current_reading = self._sensing_module.read_sensors()
 
             if current_reading is not None:
-                message = self._generate_message(reading=current_reading)
-                self.communication_module.send_message(message=message)
+                payload = self._generate_reading_payload(
+                    reading=current_reading
+                )
+                message = self._communication_module.generate_message(
+                    payload=payload
+                )
+                self._communication_module.send_message(message=message)
 
             self._wait_time_interval_next_reading()
 
-    def _generate_message(self, reading=None):
+    def _generate_sensor_node_reading_payload(self, reading=None):
         """
-        Generates a message containing a reading to be sent over DTN.
+        Generates a payload containing a reading to be sent
+        in a message over dtn.
 
         Parameters
         ----------
-        reading : Reading
-            A Reading object representing a sensors reading.
+        reading : JSON
+            A Reading object representing a sensors node reading.
 
         Returns
         ---------
-        A Message object containg a payload and a custody. 
-        Payload has a JSON with two keys:
-          sensor_node : sensor node uuid;
-          reading : contains a reading collected from sensors.
-        Custody: no custody transference is used.
-        """
+        A payload JSON.
+      """
 
         payload = {
-            "sensor_node": {"uuid": self._uuid},
+            "sensor_node": {"id": self._uuid},
             "reading": reading.to_dict(),
         }
 
-        return Message(
-            payload=json.dumps(payload),
-            custody=env.bool("MESSAGE_CUSTODY", default=None),
-            lifetime=env.int("MESSAGE_LIFETIME", default=None),
-        )
+        return payload
 
     def _wait_time_interval_next_reading(self):
         """
