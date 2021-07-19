@@ -34,6 +34,11 @@ class BME280(Sensor):
             # Since environs lib can not handle hexadecimal numbers,
             # it is necessary to convert the hexadecimal string to int
             self._i2c_address = int(self._str_i2c_address, 16)
+            print(
+                "BME280: Setting sensor i2c address as 0x{:02x}".format(
+                    self._i2c_address
+                )
+            )
 
         self._local_sea_level = env.float(
             "BME280_LOCAL_SEA_LEVEL", default=None
