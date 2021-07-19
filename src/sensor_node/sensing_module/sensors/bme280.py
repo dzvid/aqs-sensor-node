@@ -26,9 +26,14 @@ class BME280(Sensor):
     """
 
     def __init__(self):
-        self._i2c_address = env.int("BME280_I2C_ADDRESS", default=None)
-        if self._i2c_address is None:
+        self._str_i2c_address = env.str("BME280_I2C_ADDRESS", default=None)
+        self._i2c_address = None
+        if self._str_i2c_address is None:
             raise ValueError("BME280: Necessary to inform sensor i2c address!")
+        else:
+            # Since environs lib can not handle hexadecimal numbers,
+            # it is necessary to convert the hexadecimal string to int
+            self._i2c_address = int(self._str_i2c_address, 16)
 
         self._local_sea_level = env.float(
             "BME280_LOCAL_SEA_LEVEL", default=None
