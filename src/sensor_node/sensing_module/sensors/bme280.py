@@ -26,26 +26,28 @@ class BME280(Sensor):
     """
 
     def __init__(self):
+        self._i2c_address = env.int("BME280_I2C_ADDRESS", default=None)
+        if self._i2c_address is None:
+            raise ValueError("BME280: Necessary to inform sensor i2c address!")
 
-        self._i2c = board.I2C()
-        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(
-            i2c=self._i2c, address=0x76
-        )
-
-        # change BME280_LOCAL_SEA_LEVEL in .env to match the
-        # location's pressure (hPa) at sea level
-        # default is sea level pressure 1013.25
         self._local_sea_level = env.float(
             "BME280_LOCAL_SEA_LEVEL", default=None
         )
-
-        # Set location's pressure (hPa) at sea level
-        if self._local_sea_level is not None:
-            self._bme280.seaLevelhPa = self._local_sea_level
-        else:
+        if self._local_sea_level is None:
             raise ValueError(
-                "BME280: Necessary to inform location's pressure (in hPa) at sea level"
+                "BME280: Necessary to inform location sea level pressure!"
             )
+
+        self._i2c = board.I2C()
+        self._bme280 = adafruit_bme280.Adafruit_BME280_I2C(
+            i2c=self._i2c, address=self._i2c_address
+        )
+        self._bme280.sea_level_pressure = self._local_sea_level
+        print(
+            "BME280: Setting sea-level pressure as {0} hPa.".format(
+                self._local_sea_level
+            )
+        )
 
     def calibrate(self):
         """
