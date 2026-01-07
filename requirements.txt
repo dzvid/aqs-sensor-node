@@ -11,7 +11,7 @@ entrypoints==0.3
 environs==6.1.0
 isort==4.3.21
 lazy-object-proxy==1.4.3
-marshmallow==3.2.2
+marshmallow==3.26.2
 mccabe==0.6.1
 pms7003==1.0.0
 pycodestyle==2.5.0
